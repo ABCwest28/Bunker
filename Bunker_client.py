@@ -43,9 +43,9 @@ class BunkerClientStartWindow(QWidget):
 
     def initUi_line_edit_ip_validation(self):
         ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                           # Часть регулярного выржение
-        ipRegex = QRegExp("^" + ipRange + "\\." + ipRange + "\\." + ipRange + "\\." + ipRange + "$")    # Само регулярное выражение
-        ipValidator = QRegExpValidator(ipRegex, self)                                                   # Валидатор для QLineEdit
-        self.line_edit_ip.setValidator(ipValidator)
+        self.ipRegex = QRegExp("^" + ipRange + "\\." + ipRange + "\\." + ipRange + "\\." + ipRange + "$")    # Само регулярное выражение
+        self.ipValidator = QRegExpValidator(self.ipRegex, self)                                                   # Валидатор для QLineEdit
+        self.line_edit_ip.setValidator(self.ipValidator)
         self.line_edit_ip.validator()
 
     def initUi_layouts(self):
@@ -74,7 +74,7 @@ class BunkerClientStartWindow(QWidget):
         self.setFont(self.font0)
 
     def enable_disable_btn_con(self):
-        if self.line_edit_nik.text() and self.line_edit_ip.text():
+        if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
             self.btn_con.setEnabled(True)
         else:
             self.btn_con.setEnabled(False)
