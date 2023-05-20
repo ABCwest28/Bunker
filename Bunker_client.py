@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit)
 from PyQt5.QtCore import QRegExp
-from PyQt5.QtGui import QRegExpValidator
+from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase
+import font_resources_rc
 
 
 class BunkerClientStartWindow(QWidget):
@@ -19,13 +20,25 @@ class BunkerClientStartWindow(QWidget):
         self.label_2 = QLabel("Ip-адрес сервера:", self)
         self.line_edit_nik = QLineEdit(self)
         self.line_edit_ip = QLineEdit(self)
+        self.btn_con = QPushButton("Connect", self)
 
         self.initUi()
         self.show()
 
     def initUi(self):
         self.setWindowTitle('Bunker Client')
+        self.setMaximumSize(500, 150)
+        self.setMinimumSize(380, 130)
+
+        self.set_font_Google()
+
+        self.line_edit_ip.setPlaceholderText("192.168.0.1")
         self.initUi_line_edit_ip_validation()
+
+        self.btn_con.setEnabled(False)
+        self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
+        self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
+
         self.initUi_layouts()
 
     def initUi_line_edit_ip_validation(self):
@@ -33,6 +46,7 @@ class BunkerClientStartWindow(QWidget):
         ipRegex = QRegExp("^" + ipRange + "\\." + ipRange + "\\." + ipRange + "\\." + ipRange + "$")    # Само регулярное выражение
         ipValidator = QRegExpValidator(ipRegex, self)                                                   # Валидатор для QLineEdit
         self.line_edit_ip.setValidator(ipValidator)
+        self.line_edit_ip.validator()
 
     def initUi_layouts(self):
         self.h_layout_1.addWidget(self.label_1)
@@ -43,7 +57,27 @@ class BunkerClientStartWindow(QWidget):
 
         self.v_layout_1.addLayout(self.h_layout_1)
         self.v_layout_1.addLayout(self.h_layout_2)
+        self.v_layout_1.addWidget(self.btn_con)
         self.setLayout(self.v_layout_1)
+
+    def set_font_Google(self):
+        fontId = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
+
+        if fontId == 0:
+            fontName = QFontDatabase.applicationFontFamilies(fontId)[0]
+            self.font0 = QFont(fontName, 30)
+        else:
+            self.font0 = QFont()
+
+        self.font0.setPointSize(16)
+
+        self.setFont(self.font0)
+
+    def enable_disable_btn_con(self):
+        if self.line_edit_nik.text() and self.line_edit_ip.text():
+            self.btn_con.setEnabled(True)
+        else:
+            self.btn_con.setEnabled(False)
 
 
 class BunkerClientMainWindow(QMainWindow):
