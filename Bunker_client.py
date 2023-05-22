@@ -34,9 +34,12 @@ class BunkerClientStartWindow(QWidget):
 
         self.btn_con = QPushButton("Connect", self)
         self.btn_discon = QPushButton("Disconnect", self)
+        self.btn_start = QPushButton("Start", self)
 
         self.initUi()
         self.show()
+
+        print(self.size())
 
     def initUi(self):
         self.setWindowTitle('Bunker Client')
@@ -53,7 +56,13 @@ class BunkerClientStartWindow(QWidget):
 
         self.text_browser.hide()
         self.text_browser.setMinimumHeight(200)
+        self.text_browser.setReadOnly(True)
+
         self.btn_discon.hide()
+        self.btn_discon.clicked.connect(self.disconnect_button_event)
+
+        self.btn_start.hide()
+        self.btn_start.clicked.connect(self.start_button_event)
 
         self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
@@ -80,6 +89,7 @@ class BunkerClientStartWindow(QWidget):
         self.v_layout_1.addWidget(self.text_browser)
         self.v_layout_1.addWidget(self.btn_con)
         self.v_layout_1.addWidget(self.btn_discon)
+        self.v_layout_1.addWidget(self.btn_start)
         self.setLayout(self.v_layout_1)
 
     def set_font_Google(self):
@@ -117,11 +127,38 @@ class BunkerClientStartWindow(QWidget):
         self.btn_discon.show()
         self.text_browser.show()
 
-        self.setMinimumSize(380, 350)
+        self.setMinimumSize(380, 380)
         self.setMaximumSize(500, 450)
+
+        self.btn_start.show() #нужно будет сделать ф-ию только 1ый подключившийся может запустить
 
         self.line_edit_nik.setEnabled(False)
         self.line_edit_ip.setEnabled(False)
+
+        self.get_data_text_browser()
+
+    def get_data_text_browser(self):
+        """
+        Получение информации о всех подключенных игроках, при добавлении сервер должен рассылать всем игрокам инфу
+        """
+        pass
+
+    def disconnect_button_event(self):
+        """нужно добавить дисконнект с сервером"""
+        self.setMaximumSize(500, 150)
+        self.setMinimumSize(380, 130)
+        self.resize(410, 132)
+
+        self.text_browser.hide()
+        self.btn_con.show()
+        self.btn_discon.hide()
+        self.btn_start.hide()
+
+        self.line_edit_nik.setEnabled(True)
+        self.line_edit_ip.setEnabled(True)
+
+    def start_button_event(self):
+        pass
 
 
 class BunkerClientMainWindow(QMainWindow):
