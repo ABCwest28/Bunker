@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QTextBrowser)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QMouseEvent
 import font_resources_rc
@@ -29,7 +29,11 @@ class BunkerClientStartWindow(QWidget):
         self.label_2 = QLabel("Ip-адрес сервера:", self)
         self.line_edit_nik = QLineEdit(self)
         self.line_edit_ip = self.LineEditWithDoubleClick(self)
+
+        self.text_browser = QTextBrowser(self)
+
         self.btn_con = QPushButton("Connect", self)
+        self.btn_discon = QPushButton("Disconnect", self)
 
         self.initUi()
         self.show()
@@ -45,6 +49,12 @@ class BunkerClientStartWindow(QWidget):
         self.initUi_line_edit_ip_validation()
 
         self.btn_con.setEnabled(False)
+        self.btn_con.clicked.connect(self.connect_button_event)
+
+        self.text_browser.hide()
+        self.text_browser.setMinimumHeight(200)
+        self.btn_discon.hide()
+
         self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.doubleClicked.connect(self.auto_fill_ip)
@@ -67,7 +77,9 @@ class BunkerClientStartWindow(QWidget):
 
         self.v_layout_1.addLayout(self.h_layout_1)
         self.v_layout_1.addLayout(self.h_layout_2)
+        self.v_layout_1.addWidget(self.text_browser)
         self.v_layout_1.addWidget(self.btn_con)
+        self.v_layout_1.addWidget(self.btn_discon)
         self.setLayout(self.v_layout_1)
 
     def set_font_Google(self):
@@ -101,14 +113,15 @@ class BunkerClientStartWindow(QWidget):
         если ник уже занят - вывод в поле никнейма
         если все норм, то вывод на окно ожидания
         """
+        self.btn_con.hide()
+        self.btn_discon.show()
+        self.text_browser.show()
 
+        self.setMinimumSize(380, 350)
+        self.setMaximumSize(500, 450)
 
-class BunkerClientWaitWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-
-    def initUi(self):
-        pass
+        self.line_edit_nik.setEnabled(False)
+        self.line_edit_ip.setEnabled(False)
 
 
 class BunkerClientMainWindow(QMainWindow):
