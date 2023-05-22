@@ -42,8 +42,28 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_start = QPushButton("Start", self)
 
         self.initUi()
+        self.init_sock()
         self.show()
 
+    def init_sock(self):
+        self.sock.connected.connect(self.connected_slot)
+        self.sock.readyRead.connect(self.read_data_slot)
+
+    def connected_slot(self):
+        """при подключении"""
+        pass
+
+    def read_data_slot(self):
+        """при получении данных"""
+        while self.sock.bytesAvailable():
+            datagram = self.sock.read(self.sock.bytesAvailable())
+
+        message = datagram.decode()
+        self.text_browser.append('Server: {}'.format(message))
+
+    def closeEvent(self, event):
+        self.sock.close()
+        event.accept()
 
     def initUi(self):
         self.setWindowTitle('Bunker Client')
@@ -132,8 +152,12 @@ class BunkerClientStartWindow(QMainWindow):
         если все норм, то вывод на окно ожидания
         """
 
-        self.sock.connectToHost(QHostAddress.LocalHost, 6666)
-
+        try:
+            ip = str(self.line_edit_ip.text())
+            self.sock.connectToHost(ip, 6666)
+            self.statusBar().showMessage(f"Connected to: {ip}")
+        except QTcpSocket.SocketError as error:
+            self.statusBar().showMessage(f"Connection error: {error}")
 
         self.btn_con.hide()
         self.btn_discon.show()
@@ -156,7 +180,8 @@ class BunkerClientStartWindow(QMainWindow):
         pass
 
     def disconnect_button_event(self):
-        """нужно добавить дисконнект с сервером"""
+        self.sock.close()
+
         self.setMaximumSize(500, 160)
         self.setMinimumSize(380, 140)
         self.resize(410, 132)
@@ -168,6 +193,8 @@ class BunkerClientStartWindow(QMainWindow):
 
         self.line_edit_nik.setEnabled(True)
         self.line_edit_ip.setEnabled(True)
+
+        self.statusBar().showMessage("Ready")
 
     def start_button_event(self):
         pass
