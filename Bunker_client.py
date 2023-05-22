@@ -94,6 +94,21 @@ class BunkerClientStartWindow(QWidget):
     # def mouseDoubleClickEvent(self, event):
     #     if event.pos() == self.line_edit_ip.pos():
     #         self.line_edit_ip.setText("192.168.0.1")
+    def connect_button_event(self):
+        """
+        попытка соединения с сервером, проверка уникальности имени
+        если не удалось подключится - вывод в поле ip
+        если ник уже занят - вывод в поле никнейма
+        если все норм, то вывод на окно ожидания
+        """
+
+
+class BunkerClientWaitWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+    def initUi(self):
+        pass
 
 
 class BunkerClientMainWindow(QMainWindow):
