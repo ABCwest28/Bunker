@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QTimer, QDateTime
 from PyQt5.QtNetwork import QUdpSocket, QHostAddress
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLabel, QVBoxLayout
 
+
 class Server1(QWidget):
     def __init__(self):
         super(Server1, self).__init__()

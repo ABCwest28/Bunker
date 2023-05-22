@@ -8,6 +8,7 @@ from PyQt5.QtGui import QFont, QFontDatabase, QColor
 from PyQt5.QtWidgets import *
 
 class WidgetBunkerClient(QMainWindow):
+
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def __init__(self):

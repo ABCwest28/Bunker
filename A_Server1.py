@@ -1,6 +1,5 @@
 import sys
 import json
-import requests
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
 from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QVBoxLayout
 

@@ -1,11 +1,12 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QTextBrowser)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QTextBrowser, QStatusBar)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
-from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QMouseEvent
+from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase
+from PyQt5.QtNetwork import QTcpSocket, QHostAddress
 import font_resources_rc
 
 
-class BunkerClientStartWindow(QWidget):
+class BunkerClientStartWindow(QMainWindow):
     """
     Окно для ввода никнейма и ip-адреса для подключения к серверу
     """
@@ -20,6 +21,10 @@ class BunkerClientStartWindow(QWidget):
 
     def __init__(self):
         super().__init__()
+
+        self.sock = QTcpSocket(self)
+
+        self.wrapper = QWidget(self)
 
         self.h_layout_1 = QHBoxLayout()
         self.h_layout_2 = QHBoxLayout()
@@ -39,12 +44,13 @@ class BunkerClientStartWindow(QWidget):
         self.initUi()
         self.show()
 
-        print(self.size())
 
     def initUi(self):
         self.setWindowTitle('Bunker Client')
-        self.setMaximumSize(500, 150)
-        self.setMinimumSize(380, 130)
+        self.setMaximumSize(500, 160)
+        self.setMinimumSize(380, 140)
+
+        self.setCentralWidget(self.wrapper)
 
         self.set_font_Google()
 
@@ -68,6 +74,8 @@ class BunkerClientStartWindow(QWidget):
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.doubleClicked.connect(self.auto_fill_ip)
 
+        self.statusBar().showMessage("Ready")
+
         self.initUi_layouts()
 
     def initUi_line_edit_ip_validation(self):
@@ -90,19 +98,22 @@ class BunkerClientStartWindow(QWidget):
         self.v_layout_1.addWidget(self.btn_con)
         self.v_layout_1.addWidget(self.btn_discon)
         self.v_layout_1.addWidget(self.btn_start)
-        self.setLayout(self.v_layout_1)
+        self.wrapper.setLayout(self.v_layout_1)
 
     def set_font_Google(self):
         fontId = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
 
         if fontId == 0:
             fontName = QFontDatabase.applicationFontFamilies(fontId)[0]
-            self.font0 = QFont(fontName, 30)
+            self.font0 = QFont(fontName, 16)
+            self.font1 = QFont(fontName, 10)
         else:
             self.font0 = QFont()
+            self.font1 = QFont()
 
-        self.font0.setPointSize(16)
+        # self.font0.setPointSize(16)
         self.setFont(self.font0)
+        self.statusBar().setFont(self.font1)
 
     def enable_disable_btn_con(self):
         if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
@@ -113,9 +124,6 @@ class BunkerClientStartWindow(QWidget):
     def auto_fill_ip(self):
         self.line_edit_ip.setText("192.168.0.1")
 
-    # def mouseDoubleClickEvent(self, event):
-    #     if event.pos() == self.line_edit_ip.pos():
-    #         self.line_edit_ip.setText("192.168.0.1")
     def connect_button_event(self):
         """
         попытка соединения с сервером, проверка уникальности имени
@@ -123,11 +131,15 @@ class BunkerClientStartWindow(QWidget):
         если ник уже занят - вывод в поле никнейма
         если все норм, то вывод на окно ожидания
         """
+
+        self.sock.connectToHost(QHostAddress.LocalHost, 6666)
+
+
         self.btn_con.hide()
         self.btn_discon.show()
         self.text_browser.show()
 
-        self.setMinimumSize(380, 380)
+        self.setMinimumSize(380, 400)
         self.setMaximumSize(500, 450)
 
         self.btn_start.show() #нужно будет сделать ф-ию только 1ый подключившийся может запустить
@@ -145,8 +157,8 @@ class BunkerClientStartWindow(QWidget):
 
     def disconnect_button_event(self):
         """нужно добавить дисконнект с сервером"""
-        self.setMaximumSize(500, 150)
-        self.setMinimumSize(380, 130)
+        self.setMaximumSize(500, 160)
+        self.setMinimumSize(380, 140)
         self.resize(410, 132)
 
         self.text_browser.hide()
