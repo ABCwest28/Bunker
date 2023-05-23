@@ -26,7 +26,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.isFirst = True
         """True - первый игрок, может запустить сессию"""
 
-        self.main_window = self.BunkerClientMainWindow()
+        self.main_window = self.BunkerClientMainWindow(self)
         self.sock = QTcpSocket(self)
 
         self.wrapper = QWidget(self)
@@ -212,9 +212,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):
-        def __init__(self):
+        def __init__(self, parent):
             super().__init__()
-            self.w = None  # No external window yet.
+            self.w = parent
 
             self.wrapper = QWidget()
             self.grid_wrapper = QGridLayout()
