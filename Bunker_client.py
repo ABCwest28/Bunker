@@ -23,6 +23,7 @@ class BunkerClientStartWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.main_window = self.BunkerClientMainWindow()
         self.sock = QTcpSocket(self)
 
         self.wrapper = QWidget(self)
@@ -134,7 +135,9 @@ class BunkerClientStartWindow(QMainWindow):
 
         # self.font0.setPointSize(16)
         self.setFont(self.font0)
+        self.main_window.setFont(self.font0)
         self.statusBar().setFont(self.font1)
+
 
     def enable_disable_btn_con(self):
         if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
@@ -199,34 +202,71 @@ class BunkerClientStartWindow(QMainWindow):
 
     def start_button_event(self):
         """отправка сигнала на серевер по запуску игры"""
-        pass
+        self.main_window.show()
+        self.hide()
+
+    class BunkerClientMainWindow(QMainWindow):
+        def __init__(self):
+            super().__init__()
+            self.w = None  # No external window yet.
+
+            self.grid = QGridLayout()
+            self.wrapper = QWidget()
+
+            self.label_profession = QLabel("Профессия")
+            self.label_bio = QLabel("Пол и возраст")
+            self.label_health = QLabel("Здоровье")
+            self.label_phobia = QLabel("Фобия")
+            self.label_hobby = QLabel("Хобби")
+            self.label_baggage = QLabel("Багаж")
+            self.label_fact1 = QLabel("Факт1")
+            self.label_fact2 = QLabel("Факт2")
+
+            self.line_profession = QLineEdit()
+            self.line_bio = QLineEdit()
+            self.line_health = QLineEdit()
+            self.line_phobia = QLineEdit()
+            self.line_hobby = QLineEdit()
+            self.line_baggage = QLineEdit()
+            self.line_fact1 = QLineEdit()
+            self.line_fact2 = QLineEdit()
+
+            self.btn_leave = QPushButton("Покинуть игру")
+
+            self.initUi()
+            self.initLayouts()
+
+        def initUi(self):
+            self.setCentralWidget(self.wrapper)
+            self.btn_leave.clicked.connect(self.btn_leave_event)
 
 
-class BunkerClientMainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.w = None  # No external window yet.
+        def initLayouts(self):
+            self.grid.addWidget(self.label_profession,  0, 0)
+            self.grid.addWidget(self.label_bio,         1, 0)
+            self.grid.addWidget(self.label_health,      2, 0)
+            self.grid.addWidget(self.label_phobia,      3, 0)
+            self.grid.addWidget(self.label_hobby,       4, 0)
+            self.grid.addWidget(self.label_baggage,     5, 0)
+            self.grid.addWidget(self.label_fact1,       6, 0)
+            self.grid.addWidget(self.label_fact2,       7, 0)
+            self.grid.addWidget(self.line_profession,   0, 1)
+            self.grid.addWidget(self.line_bio,          1, 1)
+            self.grid.addWidget(self.line_health,       2, 1)
+            self.grid.addWidget(self.line_phobia,       3, 1)
+            self.grid.addWidget(self.line_hobby,        4, 1)
+            self.grid.addWidget(self.line_baggage,      5, 1)
+            self.grid.addWidget(self.line_fact1,        6, 1)
+            self.grid.addWidget(self.line_fact2,        7, 1)
+            self.grid.addWidget(self.btn_leave,         8, 0)
 
-        self.grid = QGridLayout()
+            self.wrapper.setLayout(self.grid)
 
-        self.lable_ = QLabel("Профессия")
-        self.lable_ = QLabel("Профессия")
-
-        self.btn_leave = QPushButton("Покинуть игру")
-        self.button.clicked.connect(self.btn_leave_event)
-        self.setCentralWidget(self.button)
-
-    def initUi(self):
-        pass
-
-    def initLayouts(self):
-        self.grid.addWidget()
-
-    def btn_leave_event(self):
-        if self.w is None:
-            self.w = BunkerClientStartWindow()
-        self.w.show()
-        self.close()
+        def btn_leave_event(self):
+            if self.w is None:
+                self.w = BunkerClientStartWindow()
+            self.w.show()
+            self.close()
 
 
 if __name__ == '__main__':
