@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
-from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase
+from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
 import font_resources_rc
 
@@ -251,6 +251,7 @@ class BunkerClientStartWindow(QMainWindow):
 
         def init_widget_player(self):
             self.grid_player = QGridLayout()
+            self.icon_reveal = QIcon("imgs/reveal.png")
 
             self.label_profession = QLabel("Профессия")
             self.label_bio = QLabel("Пол и возраст")
@@ -270,6 +271,15 @@ class BunkerClientStartWindow(QMainWindow):
             self.line_fact1 = QLineEdit()
             self.line_fact2 = QLineEdit()
 
+            self.btn_profession = QPushButton(self.icon_reveal, "раскрыть")
+            self.btn_bio = QPushButton()
+            self.btn_health = QPushButton()
+            self.btn_phobia = QPushButton()
+            self.btn_hobby = QPushButton()
+            self.btn_baggage = QPushButton()
+            self.btn_fact1 = QPushButton()
+            self.btn_fact2 = QPushButton()
+
             self.grid_player.addWidget(self.label_profession, 0, 0)
             self.grid_player.addWidget(self.label_bio, 1, 0)
             self.grid_player.addWidget(self.label_health, 2, 0)
@@ -286,6 +296,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_player.addWidget(self.line_baggage, 5, 1)
             self.grid_player.addWidget(self.line_fact1, 6, 1)
             self.grid_player.addWidget(self.line_fact2, 7, 1)
+            self.grid_player.addWidget(self.btn_profession, 0, 2)
 
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
