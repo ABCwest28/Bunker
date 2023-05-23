@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
-                             QLineEdit, QTextBrowser, QStatusBar, QGridLayout)
+                             QLineEdit, QTextBrowser, QGridLayout, QTabWidget)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
@@ -22,6 +22,9 @@ class BunkerClientStartWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        self.isFirst = True
+        """True - первый игрок, может запустить сессию"""
 
         self.main_window = self.BunkerClientMainWindow()
         self.sock = QTcpSocket(self)
@@ -138,7 +141,6 @@ class BunkerClientStartWindow(QMainWindow):
         self.main_window.setFont(self.font0)
         self.statusBar().setFont(self.font1)
 
-
     def enable_disable_btn_con(self):
         if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
             self.btn_con.setEnabled(True)
@@ -154,6 +156,8 @@ class BunkerClientStartWindow(QMainWindow):
         если не удалось подключится - вывод в поле ip
         если ник уже занят - вывод в поле никнейма
         если все норм, то вывод на окно ожидания
+
+        + НУЖНО IS_FIRST ЗАПРОС
         """
 
         try:
@@ -170,7 +174,8 @@ class BunkerClientStartWindow(QMainWindow):
         self.setMinimumSize(380, 400)
         self.setMaximumSize(500, 450)
 
-        self.btn_start.show() #нужно будет сделать ф-ию только 1ый подключившийся может запустить
+        if self.isFirst:
+            self.btn_start.show()
 
         self.line_edit_nik.setEnabled(False)
         self.line_edit_ip.setEnabled(False)
@@ -210,8 +215,23 @@ class BunkerClientStartWindow(QMainWindow):
             super().__init__()
             self.w = None  # No external window yet.
 
-            self.grid = QGridLayout()
             self.wrapper = QWidget()
+
+            self.tab = QTabWidget()
+
+            self.widget_player = QWidget()
+
+            self.btn_leave = QPushButton("Покинуть игру")
+
+            self.initUi()
+            self.init_widget_player()
+
+        def initUi(self):
+            self.setCentralWidget(self.wrapper)
+            self.btn_leave.clicked.connect(self.btn_leave_event)
+
+        def init_widget_player(self):
+            self.grid_player = QGridLayout()
 
             self.label_profession = QLabel("Профессия")
             self.label_bio = QLabel("Пол и возраст")
@@ -231,36 +251,29 @@ class BunkerClientStartWindow(QMainWindow):
             self.line_fact1 = QLineEdit()
             self.line_fact2 = QLineEdit()
 
-            self.btn_leave = QPushButton("Покинуть игру")
+            self.grid_player.addWidget(self.label_profession, 0, 0)
+            self.grid_player.addWidget(self.label_bio, 1, 0)
+            self.grid_player.addWidget(self.label_health, 2, 0)
+            self.grid_player.addWidget(self.label_phobia, 3, 0)
+            self.grid_player.addWidget(self.label_hobby, 4, 0)
+            self.grid_player.addWidget(self.label_baggage, 5, 0)
+            self.grid_player.addWidget(self.label_fact1, 6, 0)
+            self.grid_player.addWidget(self.label_fact2, 7, 0)
+            self.grid_player.addWidget(self.line_profession, 0, 1)
+            self.grid_player.addWidget(self.line_bio, 1, 1)
+            self.grid_player.addWidget(self.line_health, 2, 1)
+            self.grid_player.addWidget(self.line_phobia, 3, 1)
+            self.grid_player.addWidget(self.line_hobby, 4, 1)
+            self.grid_player.addWidget(self.line_baggage, 5, 1)
+            self.grid_player.addWidget(self.line_fact1, 6, 1)
+            self.grid_player.addWidget(self.line_fact2, 7, 1)
+            self.grid_player.addWidget(self.btn_leave, 8, 0, 1, 2)
 
-            self.initUi()
-            self.initLayouts()
+            self.widget_player.setLayout(self.grid_player)
+            self.tab.addTab(self.widget_player, "О себе")
 
-        def initUi(self):
-            self.setCentralWidget(self.wrapper)
-            self.btn_leave.clicked.connect(self.btn_leave_event)
-
-
-        def initLayouts(self):
-            self.grid.addWidget(self.label_profession,  0, 0)
-            self.grid.addWidget(self.label_bio,         1, 0)
-            self.grid.addWidget(self.label_health,      2, 0)
-            self.grid.addWidget(self.label_phobia,      3, 0)
-            self.grid.addWidget(self.label_hobby,       4, 0)
-            self.grid.addWidget(self.label_baggage,     5, 0)
-            self.grid.addWidget(self.label_fact1,       6, 0)
-            self.grid.addWidget(self.label_fact2,       7, 0)
-            self.grid.addWidget(self.line_profession,   0, 1)
-            self.grid.addWidget(self.line_bio,          1, 1)
-            self.grid.addWidget(self.line_health,       2, 1)
-            self.grid.addWidget(self.line_phobia,       3, 1)
-            self.grid.addWidget(self.line_hobby,        4, 1)
-            self.grid.addWidget(self.line_baggage,      5, 1)
-            self.grid.addWidget(self.line_fact1,        6, 1)
-            self.grid.addWidget(self.line_fact2,        7, 1)
-            self.grid.addWidget(self.btn_leave,         8, 0)
-
-            self.wrapper.setLayout(self.grid)
+        def init_widget_other(self):
+            pass
 
         def btn_leave_event(self):
             if self.w is None:
