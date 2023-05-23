@@ -1,5 +1,6 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QTextBrowser, QStatusBar)
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
+                             QLineEdit, QTextBrowser, QStatusBar, QGridLayout)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
@@ -197,6 +198,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.statusBar().showMessage("Ready")
 
     def start_button_event(self):
+        """отправка сигнала на серевер по запуску игры"""
         pass
 
 
@@ -204,11 +206,23 @@ class BunkerClientMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.w = None  # No external window yet.
-        self.button = QPushButton("Push for Window")
-        self.button.clicked.connect(self.show_new_window_1)
+
+        self.grid = QGridLayout()
+
+        self.lable_ = QLabel("Профессия")
+        self.lable_ = QLabel("Профессия")
+
+        self.btn_leave = QPushButton("Покинуть игру")
+        self.button.clicked.connect(self.btn_leave_event)
         self.setCentralWidget(self.button)
 
-    def show_new_window_1(self):
+    def initUi(self):
+        pass
+
+    def initLayouts(self):
+        self.grid.addWidget()
+
+    def btn_leave_event(self):
         if self.w is None:
             self.w = BunkerClientStartWindow()
         self.w.show()
