@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget)
-from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal
+from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
 import font_resources_rc
@@ -212,9 +212,10 @@ class BunkerClientStartWindow(QMainWindow):
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):
+
         def __init__(self, parent):
             super().__init__()
-            self.w = parent
+            self.parent = parent
 
             self.wrapper = QWidget()
             self.grid_wrapper = QGridLayout()
@@ -254,49 +255,67 @@ class BunkerClientStartWindow(QMainWindow):
             self.icon_reveal = QIcon("imgs/reveal.png")
 
             self.label_profession = QLabel("Профессия")
-            self.label_bio = QLabel("Пол и возраст")
-            self.label_health = QLabel("Здоровье")
-            self.label_phobia = QLabel("Фобия")
-            self.label_hobby = QLabel("Хобби")
-            self.label_baggage = QLabel("Багаж")
-            self.label_fact1 = QLabel("Факт1")
-            self.label_fact2 = QLabel("Факт2")
+            self.label_bio =        QLabel("Пол и возраст")
+            self.label_health =     QLabel("Здоровье")
+            self.label_phobia =     QLabel("Фобия")
+            self.label_hobby =      QLabel("Хобби")
+            self.label_baggage =    QLabel("Багаж")
+            self.label_fact1 =      QLabel("Факт1")
+            self.label_fact2 =      QLabel("Факт2")
 
-            self.line_profession = QLineEdit()
-            self.line_bio = QLineEdit()
-            self.line_health = QLineEdit()
-            self.line_phobia = QLineEdit()
-            self.line_hobby = QLineEdit()
-            self.line_baggage = QLineEdit()
-            self.line_fact1 = QLineEdit()
-            self.line_fact2 = QLineEdit()
+            self.line_profession =  QLineEdit()
+            self.line_bio =         QLineEdit()
+            self.line_health =      QLineEdit()
+            self.line_phobia =      QLineEdit()
+            self.line_hobby =       QLineEdit()
+            self.line_baggage =     QLineEdit()
+            self.line_fact1 =       QLineEdit()
+            self.line_fact2 =       QLineEdit()
 
-            self.btn_profession = QPushButton(self.icon_reveal, "раскрыть")
-            self.btn_bio = QPushButton()
-            self.btn_health = QPushButton()
-            self.btn_phobia = QPushButton()
-            self.btn_hobby = QPushButton()
-            self.btn_baggage = QPushButton()
-            self.btn_fact1 = QPushButton()
-            self.btn_fact2 = QPushButton()
+            self.btn_profession =   QPushButton(self.icon_reveal, "")
+            self.btn_bio =          QPushButton(self.icon_reveal, "")
+            self.btn_health =       QPushButton(self.icon_reveal, "")
+            self.btn_phobia =       QPushButton(self.icon_reveal, "")
+            self.btn_hobby =        QPushButton(self.icon_reveal, "")
+            self.btn_baggage =      QPushButton(self.icon_reveal, "")
+            self.btn_fact1 =        QPushButton(self.icon_reveal, "")
+            self.btn_fact2 =        QPushButton(self.icon_reveal, "")
 
-            self.grid_player.addWidget(self.label_profession, 0, 0)
-            self.grid_player.addWidget(self.label_bio, 1, 0)
-            self.grid_player.addWidget(self.label_health, 2, 0)
-            self.grid_player.addWidget(self.label_phobia, 3, 0)
-            self.grid_player.addWidget(self.label_hobby, 4, 0)
-            self.grid_player.addWidget(self.label_baggage, 5, 0)
-            self.grid_player.addWidget(self.label_fact1, 6, 0)
-            self.grid_player.addWidget(self.label_fact2, 7, 0)
-            self.grid_player.addWidget(self.line_profession, 0, 1)
-            self.grid_player.addWidget(self.line_bio, 1, 1)
-            self.grid_player.addWidget(self.line_health, 2, 1)
-            self.grid_player.addWidget(self.line_phobia, 3, 1)
-            self.grid_player.addWidget(self.line_hobby, 4, 1)
-            self.grid_player.addWidget(self.line_baggage, 5, 1)
-            self.grid_player.addWidget(self.line_fact1, 6, 1)
-            self.grid_player.addWidget(self.line_fact2, 7, 1)
-            self.grid_player.addWidget(self.btn_profession, 0, 2)
+            self.btn_profession.setIconSize(QSize(26, 26))
+            self.btn_bio.setIconSize(QSize(26, 26))
+            self.btn_health.setIconSize(QSize(26, 26))
+            self.btn_phobia.setIconSize(QSize(26, 26))
+            self.btn_hobby.setIconSize(QSize(26, 26))
+            self.btn_baggage.setIconSize(QSize(26, 26))
+            self.btn_fact1.setIconSize(QSize(26, 26))
+            self.btn_fact2.setIconSize(QSize(26, 26))
+
+            self.grid_player.addWidget(self.label_profession,   0, 0)
+            self.grid_player.addWidget(self.label_bio,          1, 0)
+            self.grid_player.addWidget(self.label_health,       2, 0)
+            self.grid_player.addWidget(self.label_phobia,       3, 0)
+            self.grid_player.addWidget(self.label_hobby,        4, 0)
+            self.grid_player.addWidget(self.label_baggage,      5, 0)
+            self.grid_player.addWidget(self.label_fact1,        6, 0)
+            self.grid_player.addWidget(self.label_fact2,        7, 0)
+
+            self.grid_player.addWidget(self.line_profession,    0, 1)
+            self.grid_player.addWidget(self.line_bio,           1, 1)
+            self.grid_player.addWidget(self.line_health,        2, 1)
+            self.grid_player.addWidget(self.line_phobia,        3, 1)
+            self.grid_player.addWidget(self.line_hobby,         4, 1)
+            self.grid_player.addWidget(self.line_baggage,       5, 1)
+            self.grid_player.addWidget(self.line_fact1,         6, 1)
+            self.grid_player.addWidget(self.line_fact2,         7, 1)
+
+            self.grid_player.addWidget(self.btn_profession,     0, 2)
+            self.grid_player.addWidget(self.btn_bio,            1, 2)
+            self.grid_player.addWidget(self.btn_health,         2, 2)
+            self.grid_player.addWidget(self.btn_phobia,         3, 2)
+            self.grid_player.addWidget(self.btn_hobby,          4, 2)
+            self.grid_player.addWidget(self.btn_baggage,        5, 2)
+            self.grid_player.addWidget(self.btn_fact1,          6, 2)
+            self.grid_player.addWidget(self.btn_fact2,          7, 2)
 
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
@@ -311,9 +330,9 @@ class BunkerClientStartWindow(QMainWindow):
             pass
 
         def btn_leave_event(self):
-            if self.w is None:
-                self.w = BunkerClientStartWindow()
-            self.w.show()
+            if self.parent is None:
+                self.parent = BunkerClientStartWindow()
+            self.parent.show()
             self.close()
 
 
