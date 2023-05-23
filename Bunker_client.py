@@ -208,6 +208,7 @@ class BunkerClientStartWindow(QMainWindow):
     def start_button_event(self):
         """отправка сигнала на серевер по запуску игры"""
         self.main_window.show()
+        self.main_window.label_nik.setText(self.line_edit_nik.text())
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):
@@ -216,19 +217,37 @@ class BunkerClientStartWindow(QMainWindow):
             self.w = None  # No external window yet.
 
             self.wrapper = QWidget()
+            self.grid_wrapper = QGridLayout()
+
+            self.label_nik = QLabel()
+            print(str())
 
             self.tab = QTabWidget()
-
             self.widget_player = QWidget()
+            self.widget_aboutAll = QWidget()
+            self.widget_voting = QWidget()
+            self.widget_history = QWidget()
+
+            self.init_widget_player()
+            self.init_widget_aboutAll()
+            self.init_widget_voting()
+            self.init_widget_history()
 
             self.btn_leave = QPushButton("Покинуть игру")
 
             self.initUi()
-            self.init_widget_player()
+            self.init_grid()
 
         def initUi(self):
             self.setCentralWidget(self.wrapper)
             self.btn_leave.clicked.connect(self.btn_leave_event)
+
+        def init_grid(self):
+            self.grid_wrapper.addWidget(self.label_nik, 0, 0)
+            self.grid_wrapper.addWidget(self.tab, 1, 0)
+            self.grid_wrapper.addWidget(self.btn_leave, 2, 0)
+
+            self.wrapper.setLayout(self.grid_wrapper)
 
         def init_widget_player(self):
             self.grid_player = QGridLayout()
@@ -267,12 +286,17 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_player.addWidget(self.line_baggage, 5, 1)
             self.grid_player.addWidget(self.line_fact1, 6, 1)
             self.grid_player.addWidget(self.line_fact2, 7, 1)
-            self.grid_player.addWidget(self.btn_leave, 8, 0, 1, 2)
 
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
 
-        def init_widget_other(self):
+        def init_widget_aboutAll(self):
+            pass
+
+        def init_widget_voting(self):
+            pass
+
+        def init_widget_history(self):
             pass
 
         def btn_leave_event(self):
