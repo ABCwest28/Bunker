@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
-                             QLineEdit, QTextBrowser, QGridLayout, QTabWidget)
+                             QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
@@ -137,6 +137,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.font1 = QFont()
 
         # self.font0.setPointSize(16)
+        QToolTip.setFont(self.font1)
         self.setFont(self.font0)
         self.main_window.setFont(self.font0)
         self.statusBar().setFont(self.font1)
@@ -238,6 +239,7 @@ class BunkerClientStartWindow(QMainWindow):
 
             self.initUi()
             self.init_grid()
+            self.set_tooltips()
 
         def initUi(self):
             self.setCentralWidget(self.wrapper)
@@ -260,8 +262,8 @@ class BunkerClientStartWindow(QMainWindow):
             self.label_phobia =     QLabel("Фобия")
             self.label_hobby =      QLabel("Хобби")
             self.label_baggage =    QLabel("Багаж")
-            self.label_fact1 =      QLabel("Факт1")
-            self.label_fact2 =      QLabel("Факт2")
+            self.label_fact1 =      QLabel("Факт №1")
+            self.label_fact2 =      QLabel("Факт №2")
 
             self.line_profession =  QLineEdit()
             self.line_bio =         QLineEdit()
@@ -280,6 +282,9 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_baggage =      QPushButton(self.icon_reveal, "")
             self.btn_fact1 =        QPushButton(self.icon_reveal, "")
             self.btn_fact2 =        QPushButton(self.icon_reveal, "")
+
+            self.btn_action_card1 = QPushButton(f"Активировать карту №1: ")
+            self.btn_action_card2 = QPushButton(f"Активировать карту №2: ")
 
             self.btn_profession.setIconSize(QSize(26, 26))
             self.btn_bio.setIconSize(QSize(26, 26))
@@ -317,8 +322,27 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_player.addWidget(self.btn_fact1,          6, 2)
             self.grid_player.addWidget(self.btn_fact2,          7, 2)
 
+            self.grid_player.addWidget(self.btn_action_card1, 8, 0, 1, 3)
+            self.grid_player.addWidget(self.btn_action_card2, 9, 0, 1, 3)
+
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
+
+        def set_tooltips(self):
+            self.label_nik.setToolTip("Ваш ник")
+
+            self.tab.setTabToolTip(0, "Окно информации о своем персонаже")
+
+            self.btn_profession.setToolTip("Раскрыть характеристику")
+            self.btn_bio.setToolTip("Раскрыть характеристику")
+            self.btn_health.setToolTip("Раскрыть характеристику")
+            self.btn_phobia.setToolTip("Раскрыть характеристику")
+            self.btn_hobby.setToolTip("Раскрыть характеристику")
+            self.btn_baggage.setToolTip("Раскрыть характеристику")
+            self.btn_fact1.setToolTip("Раскрыть характеристику")
+            self.btn_fact2.setToolTip("Раскрыть характеристику")
+
+            self.btn_leave.setToolTip("Покинуть игру")
 
         def init_widget_aboutAll(self):
             pass
