@@ -101,7 +101,7 @@ class BunkerClientStartWindow(QMainWindow):
 
         self.statusBar().showMessage("Ready")
 
-        self.initUi_layouts()
+        self.init_layouts()
 
     def initUi_line_edit_ip_validation(self):
         ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                               # Часть регулярного выржение
@@ -110,7 +110,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_ip.setValidator(self.ipValidator)
         self.line_edit_ip.validator()
 
-    def initUi_layouts(self):
+    def init_layouts(self):
         self.h_layout_1.addWidget(self.label_1)
         self.h_layout_1.addWidget(self.line_edit_nik)
 
@@ -149,6 +149,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_con.setEnabled(False)
 
     def auto_fill_ip(self):
+        """Можно сохранять предыдущее подключение и вставлять его"""
         self.line_edit_ip.setText("192.168.0.1")
 
     def connect_button_event(self):
@@ -222,7 +223,6 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_wrapper = QGridLayout()
 
             self.label_nik = QLabel()
-            print(str())
 
             self.tab = QTabWidget()
             self.widget_player = QWidget()
@@ -242,6 +242,8 @@ class BunkerClientStartWindow(QMainWindow):
             self.set_tooltips()
 
         def initUi(self):
+            self.setMinimumSize(600, 500)
+
             self.setCentralWidget(self.wrapper)
             self.btn_leave.clicked.connect(self.btn_leave_event)
 
@@ -328,6 +330,22 @@ class BunkerClientStartWindow(QMainWindow):
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
 
+        def init_widget_aboutAll(self):
+            self.tab.addTab(self.widget_aboutAll, "Общее")
+
+        def init_widget_voting(self):
+            self.tab.addTab(self.widget_voting, "Голосование")
+
+        def init_widget_history(self):
+            self.grid_history = QGridLayout()
+
+            self.text_browser_history = QTextBrowser()
+            self.text_browser_history.setReadOnly(True)
+            self.grid_history.addWidget(self.text_browser_history)
+
+            self.widget_history.setLayout(self.grid_history)
+            self.tab.addTab(self.widget_history, "История")
+
         def set_tooltips(self):
             self.label_nik.setToolTip("Ваш ник")
 
@@ -342,21 +360,14 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_fact1.setToolTip("Раскрыть характеристику")
             self.btn_fact2.setToolTip("Раскрыть характеристику")
 
-            self.btn_leave.setToolTip("Покинуть игру")
+            self.btn_action_card1.setToolTip("Активировать карту действия<br>Можно воспользоваться в любой момент")
+            self.btn_action_card2.setToolTip("Активировать карту действия<br>Можно воспользоваться в любой момент")
 
-        def init_widget_aboutAll(self):
-            pass
-
-        def init_widget_voting(self):
-            pass
-
-        def init_widget_history(self):
-            pass
+            self.btn_leave.setToolTip("Покинуть текущую игру<br>Вернуться в сессию будет <b>невозможно</b>")
 
         def btn_leave_event(self):
-            if self.parent is None:
-                self.parent = BunkerClientStartWindow()
             self.parent.show()
+            self.parent.disconnect_button_event()
             self.close()
 
 
