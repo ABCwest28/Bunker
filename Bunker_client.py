@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVB
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
-from PyQt5.QtNetwork import QTcpSocket, QHostAddress
+from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress
 import font_resources_rc
 
 
@@ -150,7 +150,8 @@ class BunkerClientStartWindow(QMainWindow):
         + НУЖНО IS_FIRST ЗАПРОС
         """
         ip = str(self.line_edit_ip.text())
-        self.sock.connectToHost(ip, 8888)
+        self.sock.connectToHost(ip, 40040)
+        # self.sock.connectToHost(QHostAddress.LocalHost, 8888)
 
     def handle_error(self):
         self.statusBar().showMessage(f"Ошибка подключения: {str(self.sock.errorString())}")
@@ -158,7 +159,7 @@ class BunkerClientStartWindow(QMainWindow):
     def handle_connected(self):
         """При успешном подключении
         НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
-        if self.sock.state() == Qt.ConnectedState:
+        if self.sock.state() == QAbstractSocket.ConnectedState:
             print("Успешно подключено к серверу")
             self.statusBar().showMessage(f"Connected")
             self.btn_con.hide()
