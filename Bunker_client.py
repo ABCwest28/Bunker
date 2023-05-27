@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
-from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize
+from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QHostAddress
 import font_resources_rc
@@ -27,7 +27,11 @@ class BunkerClientStartWindow(QMainWindow):
         """True - первый игрок, может запустить сессию"""
 
         self.main_window = self.BunkerClientMainWindow(self)
-        self.sock = QTcpSocket(self)
+
+        self.sock = QTcpSocket()
+        self.sock.readyRead.connect(self.read_data_slot)
+        self.sock.connected.connect(self.handle_connected)
+        self.sock.errorOccurred.connect(self.handle_error)
 
         self.wrapper = QWidget(self)
 
@@ -47,24 +51,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_start = QPushButton("Start", self)
 
         self.initUi()
-        self.init_sock()
         self.show()
-
-    def init_sock(self):
-        self.sock.connected.connect(self.connected_slot)
-        self.sock.readyRead.connect(self.read_data_slot)
-
-    def connected_slot(self):
-        """при подключении"""
-        pass
-
-    def read_data_slot(self):
-        """при получении данных"""
-        while self.sock.bytesAvailable():
-            datagram = self.sock.read(self.sock.bytesAvailable())
-
-        message = datagram.decode()
-        self.text_browser.append('Server: {}'.format(message))
 
     def closeEvent(self, event):
         self.sock.close()
@@ -154,6 +141,7 @@ class BunkerClientStartWindow(QMainWindow):
 
     def connect_button_event(self):
         """
+        вроде перенес на другой метод
         попытка соединения с сервером, проверка уникальности имени
         если не удалось подключится - вывод в поле ip
         если ник уже занят - вывод в поле никнейма
@@ -161,28 +149,43 @@ class BunkerClientStartWindow(QMainWindow):
 
         + НУЖНО IS_FIRST ЗАПРОС
         """
+        ip = str(self.line_edit_ip.text())
+        self.sock.connectToHost(ip, 8888)
 
-        try:
-            ip = str(self.line_edit_ip.text())
-            self.sock.connectToHost(ip, 6666)
-            self.statusBar().showMessage(f"Connected to: {ip}")
-        except QTcpSocket.SocketError as error:
-            self.statusBar().showMessage(f"Connection error: {error}")
+    def handle_error(self):
+        self.statusBar().showMessage(f"Ошибка подключения: {str(self.sock.errorString())}")
 
-        self.btn_con.hide()
-        self.btn_discon.show()
-        self.text_browser.show()
+    def handle_connected(self):
+        """При успешном подключении
+        НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
+        if self.sock.state() == Qt.ConnectedState:
+            print("Успешно подключено к серверу")
+            self.statusBar().showMessage(f"Connected")
+            self.btn_con.hide()
+            self.btn_discon.show()
+            self.text_browser.show()
 
-        self.setMinimumSize(380, 400)
-        self.setMaximumSize(500, 450)
+            self.setMinimumSize(380, 400)
+            self.setMaximumSize(500, 450)
 
-        if self.isFirst:
-            self.btn_start.show()
+            if self.isFirst:
+                self.btn_start.show()
 
-        self.line_edit_nik.setEnabled(False)
-        self.line_edit_ip.setEnabled(False)
+            self.line_edit_nik.setEnabled(False)
+            self.line_edit_ip.setEnabled(False)
 
-        self.get_data_text_browser()
+            self.get_data_text_browser()
+        else:
+            print("Не удалось подключиться к серверу")
+            self.statusBar().showMessage(f"Connection failed")
+
+    def read_data_slot(self):
+        """при получении данных"""
+        while self.sock.bytesAvailable():
+            datagram = self.sock.read(self.sock.bytesAvailable())
+
+        message = datagram.decode()
+        self.text_browser.append('Server: {}'.format(message))
 
     def get_data_text_browser(self):
         """
@@ -191,6 +194,8 @@ class BunkerClientStartWindow(QMainWindow):
         pass
 
     def disconnect_button_event(self):
+        """Событие
+        НУЖНО отправить сигнал об отключении"""
         self.sock.close()
 
         self.setMaximumSize(500, 160)
@@ -214,7 +219,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):
-
+        """основное окно игры"""
         def __init__(self, parent):
             super().__init__()
             self.parent = parent
@@ -347,6 +352,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.tab.addTab(self.widget_history, "История")
 
         def set_tooltips(self):
+            """устанавливает всплывающие подсказки"""
             self.label_nik.setToolTip("Ваш ник")
 
             self.tab.setTabToolTip(0, "Окно информации о своем персонаже")
@@ -366,8 +372,8 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_leave.setToolTip("Покинуть текущую игру<br>Вернуться в сессию будет <b>невозможно</b>")
 
         def btn_leave_event(self):
-            self.parent.show()
             self.parent.disconnect_button_event()
+            self.parent.show()
             self.close()
 
 
