@@ -7,6 +7,8 @@ class Server(QWidget):
     def __init__(self):
         super(Server, self).__init__()
 
+        self.set_full_number()
+
         self.players = []
 
         self.resize(500, 450)
@@ -28,9 +30,10 @@ class Server(QWidget):
     def new_socket_slot(self):
         sock = self.server.nextPendingConnection()
 
+        peer_name = str(sock.peerName())
         peer_address = sock.peerAddress().toString()
         peer_port = sock.peerPort()
-        news = 'Connected with address {}, port {}'.format(peer_address, str(peer_port))
+        news = 'Connected {} address {}, port {}'.format(peer_name, peer_address, str(peer_port))
         self.browser.append(news)
 
         sock.readyRead.connect(lambda: self.read_data_slot(sock))
@@ -59,12 +62,28 @@ class Server(QWidget):
         self.players.append(player)
         self.browser.append("Добавлен игрок")
 
+    def set_full_number(self):
+        try:
+            sqlite_connection = sqlite3.connect('BunkerDB.db')
+            cursor = sqlite_connection.cursor()
+            for table in ("profession", "health", "phobia", "hobby", "baggage", "fact", "action_card"):
+                sqlite_update_0 = f"UPDATE {table} SET remain = number"
+                cursor.execute(sqlite_update_0)
+                sqlite_connection.commit()
+            cursor.close()
+        except sqlite3.Error as error:
+            print("set_full_number->Ошибка при работе с SQLite", error)
+            self.browser.append(f"Ошибка при работе с SQLite: {error}")
+        finally:
+            if sqlite_connection:
+                sqlite_connection.close()
+
 
 class Player:
     def __init__(self, parent, name):
         self.parent = parent
-        self.name = name
 
+        self.name = name
         self.bio =          self.get_data(param="bio")
         self.profession =   self.get_data(param="profession")
         self.health =       self.get_data(param="health")
@@ -103,6 +122,10 @@ class Player:
                 cursor.execute(sqlite_select_0)
                 result = cursor.fetchone()[0]
 
+                sqlite_update_0 = f"UPDATE {param} SET remain = remain - 1 WHERE name = \"{result}\""
+                cursor.execute(sqlite_update_0)
+                sqlite_connection.commit()
+
                 if param == "phobia" or param == "health":
                     sqlite_select_1 = f"SELECT abss FROM {param} WHERE name=\"{result}\""
                     cursor.execute(sqlite_select_1)
@@ -124,7 +147,6 @@ class Player:
 
         self.parent.browser.append(result)
         return result
-
 
 
 if __name__ == '__main__':
