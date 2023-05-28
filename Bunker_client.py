@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVB
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
-from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress
+from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress, QNetworkProxy
 import font_resources_rc
 
 
@@ -29,6 +29,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.main_window = self.BunkerClientMainWindow(self)
 
         self.sock = QTcpSocket()
+        self.proxy = QNetworkProxy()
+        self.proxy.setType(QNetworkProxy.NoProxy)
+        self.sock.setProxy(self.proxy)
         self.sock.readyRead.connect(self.read_data_slot)
         self.sock.connected.connect(self.handle_connected)
         self.sock.errorOccurred.connect(self.handle_error)

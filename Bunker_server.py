@@ -92,20 +92,28 @@ class Player:
             else:
                 sex = "Жен. бесплодна"
 
-            result = f"{sex}, стаж работы: {exp_prof}, стаж хобби: {exp_hobby}"
+            result = f"{sex}, возраст: {age}, стаж работы: {exp_prof}, стаж хобби: {exp_hobby}"
         else:
             try:
                 sqlite_connection = sqlite3.connect('BunkerDB.db')
                 cursor = sqlite_connection.cursor()
                 print("get_data->Подключен к SQLite")
 
-                sqlite_select_0 = """
-                SELECT name FROM ? 
-                WHERE remain > 0 
-                LIMIT 1 
-                OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) 
-                                            FROM table
-                                            WHERE remain > 0), 1)"""
+                if param == "profession":
+                    sqlite_select_0 = """SELECT name FROM profession WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "health":
+                    sqlite_select_0 = """SELECT name FROM health WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "phobia":
+                    sqlite_select_0 = """SELECT name FROM phobia WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "hobby":
+                    sqlite_select_0 = """SELECT name FROM hobby WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "baggage":
+                    sqlite_select_0 = """SELECT name FROM baggage WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "fact":
+                    sqlite_select_0 = """SELECT name FROM fact WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                elif param == "action_card":
+                    sqlite_select_0 = """SELECT name FROM fact WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+
                 cursor.execute(sqlite_select_0, (param, ))
                 result = cursor.fetchone()
                 cursor.close()
