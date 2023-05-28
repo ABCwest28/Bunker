@@ -159,7 +159,7 @@ class BunkerClientStartWindow(QMainWindow):
         """При успешном подключении
         НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
         if self.sock.state() == QAbstractSocket.ConnectedState:
-            # self.sock.write(self.line_edit_nik.text().encode())
+            self.sock.write(("00:" + self.line_edit_nik.text()).encode())
 
             print("Успешно подключено к серверу")
             self.statusBar().showMessage(f"Connected")

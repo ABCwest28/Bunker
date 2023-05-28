@@ -41,7 +41,9 @@ class Server(QWidget):
             datagram = sock.read(sock.bytesAvailable())
 
         message = datagram.decode()
-        sock.write(message)
+        if message[:3] == "00:":
+            """тут нужно сравнить имя в базе на уникальность"""
+            self.add_new_player(name=message[3:])
 
     def disconnected_slot(self, sock):
         peer_address = sock.peerAddress().toString()
@@ -55,6 +57,7 @@ class Server(QWidget):
     def add_new_player(self, name):
         player = Player(parent=self, name=name)
         self.players.append(player)
+        self.browser.append("Добавлен игрок")
 
 
 class Player:
@@ -62,20 +65,18 @@ class Player:
         self.parent = parent
         self.name = name
 
-        self.bio =          self.get_data("bio")
-        self.profession =   self.get_data("profession")
-        self.health =       self.get_data("health")
-        self.phobia =       self.get_data("phobia")
-        self.hobby =        self.get_data("hobby")
-        self.baggage =      self.get_data("baggage")
-        self.fact1 =        self.get_data("fact")
-        self.fact2 =        self.get_data("fact")
-        self.action_card1 = self.get_data("action_card")
-        self.action_card2 = self.get_data("action_card")
+        self.bio =          self.get_data(param="bio")
+        self.profession =   self.get_data(param="profession")
+        self.health =       self.get_data(param="health")
+        self.phobia =       self.get_data(param="phobia")
+        self.hobby =        self.get_data(param="hobby")
+        self.baggage =      self.get_data(param="baggage")
+        self.fact1 =        self.get_data(param="fact")
+        self.fact2 =        self.get_data(param="fact")
+        self.action_card1 = self.get_data(param="action_card")
+        self.action_card2 = self.get_data(param="action_card")
 
     def get_data(self, param):
-        result = ""
-
         if param == "bio":
             age = sum(random.randint(0, 100) for _ in range(3)) // 3
             if age < 18: age = 18
@@ -116,8 +117,9 @@ class Player:
             finally:
                 if sqlite_connection:
                     sqlite_connection.close()
-        if param == "phobia" or "health":
-            result += random.choice(["10% тяжести", "30% тяжести", "60% тяжести", "100% тяжести"])
+
+        if param == "phobia" or param == "health":
+            result += random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
 
         self.parent.browser.append(result)
         return result
