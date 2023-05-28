@@ -98,35 +98,28 @@ class Player:
                 sqlite_connection = sqlite3.connect('BunkerDB.db')
                 cursor = sqlite_connection.cursor()
                 print("get_data->Подключен к SQLite")
+                sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM {param} WHERE remain > 0), 1)"
 
-                if param == "profession":
-                    sqlite_select_0 = """SELECT name FROM profession WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "health":
-                    sqlite_select_0 = """SELECT name FROM health WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "phobia":
-                    sqlite_select_0 = """SELECT name FROM phobia WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "hobby":
-                    sqlite_select_0 = """SELECT name FROM hobby WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "baggage":
-                    sqlite_select_0 = """SELECT name FROM baggage WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "fact":
-                    sqlite_select_0 = """SELECT name FROM fact WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
-                elif param == "action_card":
-                    sqlite_select_0 = """SELECT name FROM fact WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM table WHERE remain > 0), 1)"""
+                cursor.execute(sqlite_select_0)
+                result = cursor.fetchone()[0]
 
-                cursor.execute(sqlite_select_0, (param, ))
-                result = cursor.fetchone()
+                if param == "phobia" or param == "health":
+                    sqlite_select_1 = f"SELECT abss FROM {param} WHERE name=\"{result}\""
+                    cursor.execute(sqlite_select_1)
+                    abss = int(cursor.fetchone()[0])
+
                 cursor.close()
 
             except sqlite3.Error as error:
                 self.parent.browser.append(f"Ошибка при работе с SQLite: {error}")
                 result = "sql_error"
+                abss = 0
 
             finally:
                 if sqlite_connection:
                     sqlite_connection.close()
 
-        if param == "phobia" or param == "health":
+        if (param == "phobia" or param == "health") and abss == 0:
             result += random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
 
         self.parent.browser.append(result)
