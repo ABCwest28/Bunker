@@ -151,7 +151,6 @@ class BunkerClientStartWindow(QMainWindow):
         """
         ip = str(self.line_edit_ip.text())
         self.sock.connectToHost(ip, 40040)
-        # self.sock.connectToHost(QHostAddress.LocalHost, 8888)
 
     def handle_error(self):
         self.statusBar().showMessage(f"Ошибка подключения: {str(self.sock.errorString())}")
@@ -160,8 +159,11 @@ class BunkerClientStartWindow(QMainWindow):
         """При успешном подключении
         НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
         if self.sock.state() == QAbstractSocket.ConnectedState:
+            # self.sock.write(self.line_edit_nik.text().encode())
+
             print("Успешно подключено к серверу")
             self.statusBar().showMessage(f"Connected")
+
             self.btn_con.hide()
             self.btn_discon.show()
             self.text_browser.show()

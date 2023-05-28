@@ -1,4 +1,4 @@
-import sys, sqlite3
+import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
 from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QVBoxLayout, QLabel
 
@@ -6,6 +6,8 @@ from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QVBoxLayout, QL
 class Server(QWidget):
     def __init__(self):
         super(Server, self).__init__()
+
+        self.players = []
 
         self.resize(500, 450)
 
@@ -19,7 +21,6 @@ class Server(QWidget):
         self.setLayout(self.v_layout)
 
         self.server = QTcpServer(self)
-        # if not self.server.listen(QHostAddress.Any, 40040):
         if not self.server.listen(QHostAddress.Any, 40040):
             self.browser.append(self.server.errorString())
         self.server.newConnection.connect(self.new_socket_slot)
@@ -35,7 +36,6 @@ class Server(QWidget):
         sock.readyRead.connect(lambda: self.read_data_slot(sock))
         sock.disconnected.connect(lambda: self.disconnected_slot(sock))
 
-    # 3
     def read_data_slot(self, sock):
         while sock.bytesAvailable():
             datagram = sock.read(sock.bytesAvailable())
@@ -52,10 +52,18 @@ class Server(QWidget):
 
         sock.close()
 
+    def add_new_player(self, name):
+        player = Player(parent=self, name=name)
+        self.players.append(player)
+
+
 class Player:
-    def __init__(self):
-        self.profession =   self.get_data("profession")
+    def __init__(self, parent, name):
+        self.parent = parent
+        self.name = name
+
         self.bio =          self.get_data("bio")
+        self.profession =   self.get_data("profession")
         self.health =       self.get_data("health")
         self.phobia =       self.get_data("phobia")
         self.hobby =        self.get_data("hobby")
@@ -63,51 +71,57 @@ class Player:
         self.fact1 =        self.get_data("fact")
         self.fact2 =        self.get_data("fact")
         self.action_card1 = self.get_data("action_card")
+        self.action_card2 = self.get_data("action_card")
 
     def get_data(self, param):
-        try:
-            sqlite_connection = sqlite3.connect('BunkerDB.db')
-            cursor = sqlite_connection.cursor()
-            print("get_data->Подключен к SQLite")
+        result = ""
 
-            sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0"
-            cursor.execute(sqlite_select_0)
-            result_0 = cursor.fetchall()
+        if param == "bio":
+            age = sum(random.randint(0, 100) for _ in range(3)) // 3
+            if age < 18: age = 18
+            exp_prof = min(random.randint(0, age - 18) for _ in range(3))
+            exp_hobby = min(random.randint(0, age - 16) for _ in range(3))
+            t_rand = random.randint(0, 3) == 0
+            if t_rand == 0:
+                sex = "Муж."
+            elif t_rand == 1:
+                sex = "Муж. бесплоден"
+            elif t_rand == 2:
+                sex = "Жен."
+            else:
+                sex = "Жен. бесплодна"
 
-            sqlite_select_1 = """SELECT * FROM TasksTable WHERE isComplete = '1'"""
-            cursor.execute(sqlite_select_1)
-            result_1 = cursor.fetchall()
+            result = f"{sex}, стаж работы: {exp_prof}, стаж хобби: {exp_hobby}"
+        else:
+            try:
+                sqlite_connection = sqlite3.connect('BunkerDB.db')
+                cursor = sqlite_connection.cursor()
+                print("get_data->Подключен к SQLite")
 
-            n = 0
-            for i in result_0:
-                self.table.setRowCount(n + 1)
-                self.table.setItem(n, 0, QTableWidgetItem(str(i[0])))
-                self.table.setItem(n, 1, QTableWidgetItem(i[1]))
-                self.table.setItem(n, 2, QTableWidgetItem(i[2]))
-                self.table.setItem(n, 3, QTableWidgetItem("не выполнено"))
-                self.table.item(n, 3).setBackground(QColor(50, 50, 150, 35))
+                sqlite_select_0 = """
+                SELECT name FROM ? 
+                WHERE remain > 0 
+                LIMIT 1 
+                OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) 
+                                            FROM table
+                                            WHERE remain > 0), 1)"""
+                cursor.execute(sqlite_select_0, (param, ))
+                result = cursor.fetchone()
+                cursor.close()
 
-                n += 1
+            except sqlite3.Error as error:
+                self.parent.browser.append(f"Ошибка при работе с SQLite: {error}")
+                result = "sql_error"
 
-            for i in result_1:
-                self.table.setRowCount(n + 1)
-                self.table.setItem(n, 0, QTableWidgetItem(str(i[0])))
-                self.table.setItem(n, 1, QTableWidgetItem(i[1]))
-                self.table.setItem(n, 2, QTableWidgetItem(i[2]))
-                self.table.setItem(n, 3, QTableWidgetItem("выполнено"))
-                self.table.item(n, 3).setBackground(QColor(0, 250, 150, 35))
-                n += 1
+            finally:
+                if sqlite_connection:
+                    sqlite_connection.close()
+        if param == "phobia" or "health":
+            result += random.choice(["10% тяжести", "30% тяжести", "60% тяжести", "100% тяжести"])
 
-            cursor.close()
+        self.parent.browser.append(result)
+        return result
 
-        except sqlite3.Error as error:
-            print("outputTaskTable->Ошибка при работе с SQLite", error)
-            self.statusBar().showMessage(f"Ошибка при работе с SQLite: {error}")
-
-        finally:
-            if sqlite_connection:
-                sqlite_connection.close()
-                print("outputTaskTable->Соединение с SQLite закрыто")
 
 
 if __name__ == '__main__':
