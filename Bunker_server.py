@@ -10,6 +10,7 @@ class Server(QWidget):
         self.set_full_number()
 
         self.players = []
+        self.socks = []
 
         self.resize(500, 450)
 
@@ -28,7 +29,10 @@ class Server(QWidget):
         self.server.newConnection.connect(self.new_socket_slot)
 
     def new_socket_slot(self):
+        """is_first"""
         sock = self.server.nextPendingConnection()
+
+        self.socks.append(sock)
 
         peer_name = str(sock.peerName())
         peer_address = sock.peerAddress().toString()
@@ -44,9 +48,12 @@ class Server(QWidget):
             datagram = sock.read(sock.bytesAvailable())
 
         message = datagram.decode()
-        if message[:3] == "00:":
+        command = message[:3]
+        if command == "00:":
             """тут нужно сравнить имя в базе на уникальность"""
-            self.add_new_player(name=message[3:])
+            self.add_new_player(name=message[3:], sock=sock)
+        elif command == "01:":
+            pass
 
     def disconnected_slot(self, sock):
         peer_address = sock.peerAddress().toString()
@@ -57,8 +64,8 @@ class Server(QWidget):
 
         sock.close()
 
-    def add_new_player(self, name):
-        player = Player(parent=self, name=name)
+    def add_new_player(self, name, sock):
+        player = Player(parent=self, name=name, sock=sock)
         self.players.append(player)
         self.browser.append("Добавлен игрок")
 
@@ -80,8 +87,9 @@ class Server(QWidget):
 
 
 class Player:
-    def __init__(self, parent, name):
+    def __init__(self, parent, name, sock):
         self.parent = parent
+        self.sock = sock
 
         self.name = name
         self.bio =          self.get_data(param="bio")
