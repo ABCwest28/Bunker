@@ -10,7 +10,6 @@ class Server(QWidget):
         self.set_full_number()
 
         self.players = []
-        self.socks = []
 
         self.resize(500, 450)
 
@@ -32,8 +31,6 @@ class Server(QWidget):
         """is_first"""
         sock = self.server.nextPendingConnection()
 
-        self.socks.append(sock)
-
         peer_name = str(sock.peerName())
         peer_address = sock.peerAddress().toString()
         peer_port = sock.peerPort()
@@ -51,7 +48,7 @@ class Server(QWidget):
         command = message[:3]
         if command == "00:":
             """тут нужно сравнить имя в базе на уникальность"""
-            self.add_new_player(name=message[3:], sock=sock)
+            self.add_new_player(name=message[3:], sock=sock, id=len(self.players))
         elif command == "01:":
             pass
 
@@ -64,10 +61,13 @@ class Server(QWidget):
 
         sock.close()
 
-    def add_new_player(self, name, sock):
-        player = Player(parent=self, name=name, sock=sock)
+    def add_new_player(self, name, sock, id):
+        player = Player(parent=self, name=name, sock=sock, id=id)
+        if player.no_cards_remain == True:
+            sock.write("01:".encode())
+            sock.close()
         self.players.append(player)
-        self.browser.append("Добавлен игрок")
+        self.browser.append(f"Добавлен игрок {player.get_info()}")
 
     def set_full_number(self):
         try:
@@ -87,11 +87,14 @@ class Server(QWidget):
 
 
 class Player:
-    def __init__(self, parent, name, sock):
+    def __init__(self, parent, name, sock, id):
         self.parent = parent
-        self.sock = sock
-
         self.name = name
+        self.sock = sock
+        self.id = int(id)
+
+        self.no_cards_remain = False
+
         self.bio =          self.get_data(param="bio")
         self.profession =   self.get_data(param="profession")
         self.health =       self.get_data(param="health")
@@ -102,6 +105,20 @@ class Player:
         self.fact2 =        self.get_data(param="fact")
         self.action_card1 = self.get_data(param="action_card")
         self.action_card2 = self.get_data(param="action_card")
+
+        self.is_action_card1 = True
+        self.is_action_card2 = True
+
+    def get_info(self):
+        return (self.id, self.name, self.bio, self.profession, self.health, self.phobia, self.hobby,
+                self.baggage, self.fact1, self.fact2,
+                self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2)
+
+    def get_sock_by_id(self, id):
+        if id == self.id:
+            return self.sock
+        else:
+            return False
 
     def get_data(self, param):
         if param == "bio":
@@ -124,20 +141,25 @@ class Player:
             try:
                 sqlite_connection = sqlite3.connect('BunkerDB.db')
                 cursor = sqlite_connection.cursor()
-                print("get_data->Подключен к SQLite")
                 sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM {param} WHERE remain > 0), 1)"
 
-                cursor.execute(sqlite_select_0)
-                result = cursor.fetchone()[0]
+                try:
+                    cursor.execute(sqlite_select_0)
+                    result = cursor.fetchone()[0]
+                except:
+                    result = "no_cards_remain"
 
                 sqlite_update_0 = f"UPDATE {param} SET remain = remain - 1 WHERE name = \"{result}\""
                 cursor.execute(sqlite_update_0)
                 sqlite_connection.commit()
 
-                if param == "phobia" or param == "health":
-                    sqlite_select_1 = f"SELECT abss FROM {param} WHERE name=\"{result}\""
-                    cursor.execute(sqlite_select_1)
-                    abss = int(cursor.fetchone()[0])
+                if (param == "phobia" or param == "health"):
+                    if result != "no_cards_remain":
+                        sqlite_select_1 = f"SELECT abss FROM {param} WHERE name=\"{result}\""
+                        cursor.execute(sqlite_select_1)
+                        abss = int(cursor.fetchone()[0])
+                    else:
+                        abss = 1
 
                 cursor.close()
 
@@ -153,7 +175,9 @@ class Player:
         if (param == "phobia" or param == "health") and abss == 0:
             result += random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
 
-        self.parent.browser.append(result)
+        # self.parent.browser.append(result)
+        if result=="no_cards_remain":
+            self.no_cards_remain = True
         return result
 
 

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVB
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
 from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
-from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress
+from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress, QNetworkProxy
 import font_resources_rc
 
 
@@ -29,6 +29,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.main_window = self.BunkerClientMainWindow(self)
 
         self.sock = QTcpSocket()
+        self.proxy = QNetworkProxy()
+        self.proxy.setType(QNetworkProxy.NoProxy)
+        self.sock.setProxy(self.proxy)
         self.sock.readyRead.connect(self.read_data_slot)
         self.sock.connected.connect(self.handle_connected)
         self.sock.errorOccurred.connect(self.handle_error)
@@ -151,7 +154,6 @@ class BunkerClientStartWindow(QMainWindow):
         """
         ip = str(self.line_edit_ip.text())
         self.sock.connectToHost(ip, 40040)
-        # self.sock.connectToHost(QHostAddress.LocalHost, 8888)
 
     def handle_error(self):
         self.statusBar().showMessage(f"Ошибка подключения: {str(self.sock.errorString())}")
@@ -160,8 +162,11 @@ class BunkerClientStartWindow(QMainWindow):
         """При успешном подключении
         НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
         if self.sock.state() == QAbstractSocket.ConnectedState:
+            self.sock.write(("00:" + self.line_edit_nik.text()).encode())
+
             print("Успешно подключено к серверу")
             self.statusBar().showMessage(f"Connected")
+
             self.btn_con.hide()
             self.btn_discon.show()
             self.text_browser.show()
@@ -186,7 +191,10 @@ class BunkerClientStartWindow(QMainWindow):
             datagram = self.sock.read(self.sock.bytesAvailable())
 
         message = datagram.decode()
-        self.text_browser.append('Server: {}'.format(message))
+        if message[:3] == "01:":
+            self.statusBar().showMessage("Не хватило карт для вашего добавления")
+        else:
+            self.text_browser.append('Server: {}'.format(message))
 
     def get_data_text_browser(self):
         """

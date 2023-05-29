@@ -35,6 +35,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.sock.readyRead.connect(self.read_data_slot)
         self.sock.connected.connect(self.handle_connected)
         self.sock.errorOccurred.connect(self.handle_error)
+        self.sock.disconnected.connect(self.disconnected_slot)
 
         self.wrapper = QWidget(self)
 
@@ -191,13 +192,19 @@ class BunkerClientStartWindow(QMainWindow):
             datagram = self.sock.read(self.sock.bytesAvailable())
 
         message = datagram.decode()
-        self.text_browser.append('Server: {}'.format(message))
+        if message[:3] == "01:":
+            self.statusBar().showMessage("Не хватило карт для вашего добавления")
+        else:
+            self.text_browser.append('Server: {}'.format(message))
 
     def get_data_text_browser(self):
         """
         Получение информации о всех подключенных игроках, при добавлении сервер должен рассылать всем игрокам инфу
         """
         pass
+
+    def disconnected_slot(self):
+        self.disconnect_button_event()
 
     def disconnect_button_event(self):
         """Событие
