@@ -10,6 +10,7 @@ class Server(QWidget):
         self.set_full_number()
 
         self.players = []
+        self.limit_players = 20
 
         self.resize(500, 450)
 
@@ -45,11 +46,25 @@ class Server(QWidget):
             datagram = sock.read(sock.bytesAvailable())
 
         message = datagram.decode()
-        command = message[:3]
-        if command == "00:":
-            """тут нужно сравнить имя в базе на уникальность"""
-            self.add_new_player(name=message[3:], sock=sock, id=len(self.players))
-        elif command == "01:":
+        type_command = message[:3]
+        des_command = message[3:]
+        if type_command == "00:":
+            if len(self.players) == self.limit_players:
+                sock.write("02:".encode())
+                sock.close()
+            else:
+                """проверяем уникальность и если норм то добавляем"""
+                uniq = True
+                for cur_player in self.players:
+                    if (cur_player.name == des_command):
+                        uniq = False
+                if uniq:
+                    self.add_new_player(name=des_command, sock=sock, id=len(self.players))
+                else:
+                    sock.write("03:".encode())
+                    sock.close()
+
+        elif type_command == "01:":
             pass
 
     def disconnected_slot(self, sock):
@@ -64,10 +79,12 @@ class Server(QWidget):
     def add_new_player(self, name, sock, id):
         player = Player(parent=self, name=name, sock=sock, id=id)
         if player.no_cards_remain == True:
+            player = None
             sock.write("01:".encode())
             sock.close()
-        self.players.append(player)
-        self.browser.append(f"Добавлен игрок {player.get_info()}")
+        else:
+            self.players.append(player)
+            self.browser.append(f"Добавлен игрок {player.get_info()}")
 
     def set_full_number(self):
         try:

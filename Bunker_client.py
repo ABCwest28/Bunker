@@ -90,7 +90,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.doubleClicked.connect(self.auto_fill_ip)
 
-        self.statusBar().showMessage("Ready")
+        self.statusBar().showMessage("Started")
 
         self.init_layouts()
 
@@ -190,10 +190,15 @@ class BunkerClientStartWindow(QMainWindow):
         """при получении данных"""
         while self.sock.bytesAvailable():
             datagram = self.sock.read(self.sock.bytesAvailable())
-
         message = datagram.decode()
-        if message[:3] == "01:":
+
+        type_command = message[:3]
+        if type_command == "01:":
             self.statusBar().showMessage("Не хватило карт для вашего добавления")
+        elif type_command == "02:":
+            self.statusBar().showMessage("достигнут лимит игроков")
+        elif type_command == "03:":
+            self.statusBar().showMessage("никнейм игрока не уникален")
         else:
             self.text_browser.append('Server: {}'.format(message))
 
@@ -222,8 +227,6 @@ class BunkerClientStartWindow(QMainWindow):
 
         self.line_edit_nik.setEnabled(True)
         self.line_edit_ip.setEnabled(True)
-
-        self.statusBar().showMessage("Ready")
 
     def start_button_event(self):
         """отправка сигнала на серевер по запуску игры"""
