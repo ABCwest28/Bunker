@@ -144,24 +144,16 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_ip.setText("192.168.0.1")
 
     def connect_button_event(self):
-        """
-        вроде перенес на другой метод
-        попытка соединения с сервером, проверка уникальности имени
-        если не удалось подключится - вывод в поле ip
-        если ник уже занят - вывод в поле никнейма
-        если все норм, то вывод на окно ожидания
-
-        + НУЖНО IS_FIRST ЗАПРОС
-        """
         ip = str(self.line_edit_ip.text())
         self.sock.connectToHost(ip, 40040)
 
     def handle_error(self):
-        self.statusBar().showMessage(f"Ошибка подключения: {str(self.sock.errorString())}")
+        cur_error = self.sock.errorString()
+        if cur_error != "The remote host closed the connection":
+            self.statusBar().showMessage(f"Ошибка подключения: {cur_error}")
 
     def handle_connected(self):
-        """При успешном подключении
-        НУЖНО проверить, запущена ли сессия, уникален ли никнейм, is_first..."""
+        """При успешном подключении"""
         if self.sock.state() == QAbstractSocket.ConnectedState:
             self.sock.write(("00:" + self.line_edit_nik.text()).encode())
 
@@ -180,14 +172,12 @@ class BunkerClientStartWindow(QMainWindow):
 
             self.line_edit_nik.setEnabled(False)
             self.line_edit_ip.setEnabled(False)
-
-            self.get_data_text_browser()
         else:
             print("Не удалось подключиться к серверу")
             self.statusBar().showMessage(f"Connection failed")
 
     def read_data_slot(self):
-        """при получении данных"""
+        """обрабатывает получаемые сообщения"""
         while self.sock.bytesAvailable():
             datagram = self.sock.read(self.sock.bytesAvailable())
         message = datagram.decode()
@@ -201,12 +191,6 @@ class BunkerClientStartWindow(QMainWindow):
             self.statusBar().showMessage("никнейм игрока не уникален")
         else:
             self.text_browser.append('Server: {}'.format(message))
-
-    def get_data_text_browser(self):
-        """
-        Получение информации о всех подключенных игроках, при добавлении сервер должен рассылать всем игрокам инфу
-        """
-        pass
 
     def disconnected_slot(self):
         self.disconnect_button_event()

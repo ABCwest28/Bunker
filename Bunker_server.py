@@ -69,10 +69,13 @@ class Server(QWidget):
 
     def disconnected_slot(self, sock):
         peer_address = sock.peerAddress().toString()
-
         peer_port = sock.peerPort()
         news = 'Disconnected with address {}, port {}'.format(peer_address, str(peer_port))
         self.browser.append(news)
+
+        for cur_player in self.players:
+            if cur_player.get_id_by_sock(sock) != -1:
+                self.players.remove(cur_player)
 
         sock.close()
 
@@ -136,6 +139,12 @@ class Player:
             return self.sock
         else:
             return False
+
+    def get_id_by_sock(self, sock):
+        if sock == self.sock:
+            return self.id
+        else:
+            return -1
 
     def get_data(self, param):
         if param == "bio":
