@@ -11,6 +11,8 @@ class Server(QWidget):
 
         self.players = []
         self.limit_players = 20
+        self.status = False
+        """True-игра начата, False-в ожидании"""
 
         self.resize(500, 450)
 
@@ -50,18 +52,18 @@ class Server(QWidget):
         des_command = message[3:]
         if type_command == "00:":
             if len(self.players) == self.limit_players:
-                sock.write("02:".encode())
+                sock.write("02:".encode())  # Достигнут лимит игроков
                 sock.close()
             else:
                 """проверяем уникальность и если норм то добавляем"""
                 uniq = True
                 for cur_player in self.players:
-                    if (cur_player.name == des_command):
+                    if cur_player.name == des_command:
                         uniq = False
                 if uniq:
                     self.add_new_player(name=des_command, sock=sock, id=len(self.players))
                 else:
-                    sock.write("03:".encode())
+                    sock.write("03:".encode())  # Игрок с этим ником уже есть
                     sock.close()
 
         elif type_command == "01:":
@@ -72,16 +74,17 @@ class Server(QWidget):
         peer_port = sock.peerPort()
         news = 'Disconnected with address {}, port {}'.format(peer_address, str(peer_port))
         self.browser.append(news)
-
-        for cur_player in self.players:
-            if cur_player.get_id_by_sock(sock) != -1:
-                self.players.remove(cur_player)
+        if not self.status:
+            for cur_player in self.players:
+                if cur_player.get_id_by_sock(sock) != -1:
+                    cur_player.return_cards_to_deck()
+                    self.players.remove(cur_player)
 
         sock.close()
 
     def add_new_player(self, name, sock, id):
         player = Player(parent=self, name=name, sock=sock, id=id)
-        if player.no_cards_remain == True:
+        if player.no_cards_remain:
             player = None
             sock.write("01:".encode())
             sock.close()
@@ -115,24 +118,36 @@ class Player:
 
         self.no_cards_remain = False
 
-        self.bio =          self.get_data(param="bio")
-        self.profession =   self.get_data(param="profession")
-        self.health =       self.get_data(param="health")
-        self.phobia =       self.get_data(param="phobia")
-        self.hobby =        self.get_data(param="hobby")
-        self.baggage =      self.get_data(param="baggage")
-        self.fact1 =        self.get_data(param="fact")
-        self.fact2 =        self.get_data(param="fact")
+        self.bio = self.get_data(param="bio")
+        self.profession = self.get_data(param="profession")
+        self.health = self.get_data(param="health")
+        self.health_st = "not_defined"
+        self.phobia = self.get_data(param="phobia")
+        self.phobia_st = "not_defined"
+        self.hobby = self.get_data(param="hobby")
+        self.baggage = self.get_data(param="baggage")
+        self.fact1 = self.get_data(param="fact")
+        self.fact2 = self.get_data(param="fact")
         self.action_card1 = self.get_data(param="action_card")
         self.action_card2 = self.get_data(param="action_card")
 
         self.is_action_card1 = True
         self.is_action_card2 = True
 
-    def get_info(self):
-        return (self.id, self.name, self.bio, self.profession, self.health, self.phobia, self.hobby,
-                self.baggage, self.fact1, self.fact2,
-                self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2)
+    def get_info(self, param="full"):
+        """
+        param=="full" - выдает полную инфу
+        param=="sql_keys" - выдает значения полученные из таблицы
+        """
+        if param == "full":
+            return [self.id, self.name, self.bio, self.profession, self.health, self.health_st,
+                    self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
+                    self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2]
+        elif param == "sql_keys":
+            return [self.profession, self.health, self.phobia, self.hobby, self.baggage, self.fact1,
+                    self.fact2, self.action_card1, self.action_card2]
+        else:
+            pass
 
     def get_sock_by_id(self, id):
         if id == self.id:
@@ -167,7 +182,8 @@ class Player:
             try:
                 sqlite_connection = sqlite3.connect('BunkerDB.db')
                 cursor = sqlite_connection.cursor()
-                sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % MAX((SELECT COUNT(*) FROM {param} WHERE remain > 0), 1)"
+                sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % " \
+                                  f"MAX((SELECT COUNT(*) FROM {param} WHERE remain > 0), 1)"
 
                 try:
                     cursor.execute(sqlite_select_0)
@@ -179,7 +195,7 @@ class Player:
                 cursor.execute(sqlite_update_0)
                 sqlite_connection.commit()
 
-                if (param == "phobia" or param == "health"):
+                if param == "phobia" or param == "health":
                     if result != "no_cards_remain":
                         sqlite_select_1 = f"SELECT abss FROM {param} WHERE name=\"{result}\""
                         cursor.execute(sqlite_select_1)
@@ -198,13 +214,31 @@ class Player:
                 if sqlite_connection:
                     sqlite_connection.close()
 
-        if (param == "phobia" or param == "health") and abss == 0:
-            result += random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
+        if param == "health" and abss == 0:
+            self.health_st = random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
+        if param == "phobia" and abss == 0:
+            self.phobia_st = random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
 
         # self.parent.browser.append(result)
-        if result=="no_cards_remain":
+        if result == "no_cards_remain":
             self.no_cards_remain = True
         return result
+
+    def return_cards_to_deck(self):
+        param = self.get_info("sql_keys")
+        try:
+            sqlite_connection = sqlite3.connect('BunkerDB.db')
+            cursor = sqlite_connection.cursor()
+            for table, i in \
+                    ["profession", "health", "phobia", "hobby", "baggage",
+                     "fact", "fact", "action_card", "action_card"], \
+                            range(9):
+                sqlite_update_0 = f"UPDATE {table} SET remain = remain + 1 WHERE name = \"{param[i]}\""
+                cursor.execute(sqlite_update_0)
+            sqlite_connection.commit()
+        except sqlite3.Error as error:
+            self.parent.browser.append(f"Ошибка при работе с SQLite: {error}")
+            result = "sql_error"
 
 
 if __name__ == '__main__':
