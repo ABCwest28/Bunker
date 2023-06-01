@@ -76,10 +76,14 @@ class Server(QWidget):
         self.browser.append(news)
         if not self.status:
             for cur_player in self.players:
-                if cur_player.get_id_by_sock(sock) != -1:
-                    cur_player.return_cards_to_deck()
-                    self.players.remove(cur_player)
-
+                if isinstance(cur_player, Player):
+                    if cur_player.get_id_by_sock(sock) != -1:
+                        cur_player.return_cards_to_deck()
+                        self.players.remove(cur_player)
+                else:
+                    print("disconnected_slot-> cur_player - не является объектом Player")
+        else:
+            pass
         sock.close()
 
     def add_new_player(self, name, sock, id):
@@ -184,9 +188,9 @@ class Player:
                 cursor = sqlite_connection.cursor()
                 sqlite_select_0 = f"SELECT name FROM {param} WHERE remain > 0 LIMIT 1 OFFSET ABS(RANDOM()) % " \
                                   f"MAX((SELECT COUNT(*) FROM {param} WHERE remain > 0), 1)"
+                cursor.execute(sqlite_select_0)
 
                 try:
-                    cursor.execute(sqlite_select_0)
                     result = cursor.fetchone()[0]
                 except:
                     result = "no_cards_remain"
@@ -224,21 +228,22 @@ class Player:
             self.no_cards_remain = True
         return result
 
+    def __del__(self):
+        print("__del__ is called")
+
     def return_cards_to_deck(self):
-        param = self.get_info("sql_keys")
+        """возвращает значения remain (+1) для текущих параметров"""
+        params = self.get_info("sql_keys")
         try:
             sqlite_connection = sqlite3.connect('BunkerDB.db')
             cursor = sqlite_connection.cursor()
-            for table, i in \
-                    ["profession", "health", "phobia", "hobby", "baggage",
-                     "fact", "fact", "action_card", "action_card"], \
-                            range(9):
-                sqlite_update_0 = f"UPDATE {table} SET remain = remain + 1 WHERE name = \"{param[i]}\""
+            for table, param in zip(["profession", "health", "phobia", "hobby", "baggage",
+                                     "fact", "fact", "action_card", "action_card"], params):
+                sqlite_update_0 = f"UPDATE {table} SET remain = remain + 1 WHERE name = \"{param}\""
                 cursor.execute(sqlite_update_0)
             sqlite_connection.commit()
         except sqlite3.Error as error:
-            self.parent.browser.append(f"Ошибка при работе с SQLite: {error}")
-            result = "sql_error"
+            self.parent.browser.append(f"return_cards_to_deck->Ошибка при работе с SQLite: {error}")
 
 
 if __name__ == '__main__':
