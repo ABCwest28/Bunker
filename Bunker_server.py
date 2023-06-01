@@ -1,9 +1,11 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
-from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QMainWindow
+from PyQt5.QtGui import QFont, QFontDatabase
+import font_resources_rc
 
 
-class Server(QWidget):
+class Server(QMainWindow):
     def __init__(self):
         super(Server, self).__init__()
 
@@ -14,21 +16,41 @@ class Server(QWidget):
         self.status = False
         """True-игра начата, False-в ожидании"""
 
-        self.resize(500, 450)
-
-        self.label = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
-
-        self.browser = QTextBrowser(self)
-
-        self.v_layout = QVBoxLayout()
-        self.v_layout.addWidget(self.label)
-        self.v_layout.addWidget(self.browser)
-        self.setLayout(self.v_layout)
-
         self.server = QTcpServer(self)
         if not self.server.listen(QHostAddress.Any, 40040):
             self.browser.append(self.server.errorString())
         self.server.newConnection.connect(self.new_socket_slot)
+
+    def init_ui(self):
+        self.wrapper = QWidget()
+        self.setCentralWidget(self.wrapper)
+        self.grid_wrapper = QGridLayout()
+        self.wrapper.setLayout(self.grid_wrapper)
+
+        self.resize(500, 450)
+        self.label_ip = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
+        self.browser = QTextBrowser()
+
+        self.init_grid_wrapper()
+        self.set_font_google()
+
+    def init_grid_wrapper(self):
+        self.grid_wrapper.addWidget(self.label_ip, 0, 0)
+        self.grid_wrapper.addWidget(self.browser, 1, 0)
+
+    def set_font_google(self):
+        font_id = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
+
+        if font_id == 0:
+            font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
+            self.font0 = QFont(font_name, 14)
+            self.font1 = QFont(font_name, 10)
+        else:
+            self.font0 = QFont()
+            self.font1 = QFont()
+
+        QToolTip.setFont(self.font1)
+        self.setFont(self.font0)
 
     def new_socket_slot(self):
         """is_first"""
