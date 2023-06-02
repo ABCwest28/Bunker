@@ -167,8 +167,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.setMinimumSize(380, 400)
             self.setMaximumSize(500, 450)
 
-            if self.isFirst:
-                self.btn_start.show()
+            self.sock.write("04:".encode())
 
             self.line_edit_nik.setEnabled(False)
             self.line_edit_ip.setEnabled(False)
@@ -183,12 +182,17 @@ class BunkerClientStartWindow(QMainWindow):
         message = datagram.decode()
 
         type_command = message[:3]
+        des_command = message[3:]
         if type_command == "01:":
             self.statusBar().showMessage("Не хватило карт для вашего добавления")
         elif type_command == "02:":
             self.statusBar().showMessage("достигнут лимит игроков")
         elif type_command == "03:":
             self.statusBar().showMessage("никнейм игрока не уникален")
+        elif type_command == "05:":
+            self.isFirst = des_command
+            if self.isFirst:
+                self.btn_start.show()
         else:
             self.text_browser.append('Server: {}'.format(message))
 

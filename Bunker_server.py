@@ -156,10 +156,13 @@ class Server(QMainWindow):
                     sock.write("03:".encode())  # Игрок с этим ником уже есть
                     sock.close()
 
-        elif type_command == "01:":
-            pass
+        elif type_command == "04:":
+            sock.write(("04:" + str(len(self.players) == 1)).encode())
+        else:
+            self.browser.append("UNKNOWN_COMMAND: "+type_command+des_command)
 
     def disconnected_slot(self, sock):
+        """НУЖНО ПОДУМАТЬ ИГРОК ВЫГНАН ДИСКОНЕКТНУЛСА """
         peer_address = sock.peerAddress().toString()
         peer_port = sock.peerPort()
         news = 'Disconnected with address {}, port {}'.format(peer_address, str(peer_port))
@@ -232,12 +235,12 @@ class Player:
         self.is_action_card1 = True
         self.is_action_card2 = True
 
-    def get_info(self, param="full"):
+    def get_info(self, param="browser"):
         """
         param=="full" - выдает полную инфу
         param=="sql_keys" - выдает значения полученные из таблицы
         """
-        if param == "full":
+        if param == "browser":
             return [self.id, self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health, self.health_st,
                     self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
                     self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2]
@@ -245,7 +248,7 @@ class Player:
             return [self.profession, self.health, self.phobia, self.hobby, self.baggage, self.fact1,
                     self.fact2, self.action_card1, self.action_card2]
         else:
-            pass
+            return "wrong param"
 
     def get_sock_by_id(self, id):
         if id == self.id:
