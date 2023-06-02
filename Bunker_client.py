@@ -243,14 +243,15 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_leave = QPushButton("Покинуть игру")
 
             self.init_ui()
-            self.init_grid()
-            self.set_tooltips()
 
         def init_ui(self):
             self.setMinimumSize(600, 500)
 
             self.setCentralWidget(self.wrapper)
             self.btn_leave.clicked.connect(self.btn_leave_event)
+
+            self.init_grid()
+            self.set_tooltips()
 
         def init_grid(self):
             self.grid_wrapper.addWidget(self.label_nik, 0, 0)

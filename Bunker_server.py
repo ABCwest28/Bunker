@@ -21,15 +21,17 @@ class Server(QMainWindow):
             self.browser.append(self.server.errorString())
         self.server.newConnection.connect(self.new_socket_slot)
 
-    def init_ui(self):
         self.wrapper = QWidget()
-        self.setCentralWidget(self.wrapper)
         self.grid_wrapper = QGridLayout()
-        self.wrapper.setLayout(self.grid_wrapper)
 
-        self.resize(500, 450)
         self.label_ip = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
         self.browser = QTextBrowser()
+
+        self.init_ui()
+
+    def init_ui(self):
+        self.setMinimumSize(600, 500)
+        self.setCentralWidget(self.wrapper)
 
         self.init_grid_wrapper()
         self.set_font_google()
@@ -37,6 +39,8 @@ class Server(QMainWindow):
     def init_grid_wrapper(self):
         self.grid_wrapper.addWidget(self.label_ip, 0, 0)
         self.grid_wrapper.addWidget(self.browser, 1, 0)
+
+        self.wrapper.setLayout(self.grid_wrapper)
 
     def set_font_google(self):
         font_id = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
