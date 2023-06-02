@@ -1,6 +1,7 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
-from PyQt5.QtWidgets import QApplication, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QMainWindow
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QTabWidget,
+                             QPushButton, QScrollBar)
 from PyQt5.QtGui import QFont, QFontDatabase
 import font_resources_rc
 
@@ -21,26 +22,89 @@ class Server(QMainWindow):
             self.browser.append(self.server.errorString())
         self.server.newConnection.connect(self.new_socket_slot)
 
-        self.wrapper = QWidget()
-        self.grid_wrapper = QGridLayout()
-
-        self.label_ip = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
-        self.browser = QTextBrowser()
-
         self.init_ui()
 
     def init_ui(self):
         self.setMinimumSize(600, 500)
+
+        self.wrapper = QWidget()
+        self.grid_wrapper = QGridLayout()
+
+        self.label_ip = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
+        self.tab = QTabWidget()
+        self.btn_start_stop_session = QPushButton("Начать игру")
+
         self.setCentralWidget(self.wrapper)
 
         self.init_grid_wrapper()
+        self.init_tab_players()
+        self.init_tab_history()
+        self.init_tab_settings()
+
         self.set_font_google()
 
     def init_grid_wrapper(self):
         self.grid_wrapper.addWidget(self.label_ip, 0, 0)
-        self.grid_wrapper.addWidget(self.browser, 1, 0)
+        self.grid_wrapper.addWidget(self.tab, 1, 0)
+        self.grid_wrapper.addWidget(self.btn_start_stop_session, 2, 0)
 
         self.wrapper.setLayout(self.grid_wrapper)
+
+    def init_tab_players(self):
+        self.widget_players = QWidget()
+        self.widget_players_list = QWidget()
+        self.widget_players_output = QWidget()
+
+        self.grid_players = QGridLayout()
+        self.grid_players.addWidget(self.widget_players_list, 0, 0)
+        self.grid_players.addWidget(self.widget_players_output, 0, 1)
+        self.widget_players.setLayout(self.grid_players)
+
+        self.grid_players_list = QGridLayout()
+        self.widget_players_list.setLayout(self.grid_players_list)
+
+        self.label_name             = QLabel("Имя")
+        self.label_ip               = QLabel("ip")
+        self.label_profession       = QLabel("Профессия")
+        self.label_bio              = QLabel("Пол и возраст")
+        self.label_health           = QLabel("Здоровье")
+        self.label_health_st        = QLabel("ip")
+        self.label_phobia           = QLabel("Фобия")
+        self.label_phobia_st        = QLabel("ip")
+        self.label_hobby            = QLabel("Хобби")
+        self.label_baggage          = QLabel("Багаж")
+        self.label_fact1            = QLabel("Факт №1")
+        self.label_fact2            = QLabel("Факт №2")
+        self.label_action_card1     = QLabel("Карта действия №1")
+        self.label_action_card2     = QLabel("Карта действия №2")
+        self.grid_players_output    = QGridLayout()
+        self.widget_players_output.setLayout(self.grid_players_output)
+
+        self.tab.addTab(self.widget_players, "Игроки")
+
+    def init_tab_history(self):
+        self.widget_history = QWidget()
+        self.grid_history = QGridLayout()
+
+        self.browser = QTextBrowser()
+        self.horizontal_scrollbar = QScrollBar()
+        self.browser.setHorizontalScrollBar(self.horizontal_scrollbar)
+        self.btn_clear_history = QPushButton("Очистить историю")
+        self.btn_clear_history.clicked.connect(self.clear_history)
+        self.grid_history.addWidget(self.browser, 0, 0)
+        self.grid_history.addWidget(self.btn_clear_history, 1, 0)
+        self.widget_history.setLayout(self.grid_history)
+
+        self.tab.addTab(self.widget_history, "История")
+
+    def clear_history(self):
+        self.browser.clear()
+
+    def init_tab_settings(self):
+        self.widget_settings = QWidget()
+        self.grid_settings = QGridLayout()
+
+        self.tab.addTab(self.widget_settings, "Настройки")
 
     def set_font_google(self):
         font_id = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
