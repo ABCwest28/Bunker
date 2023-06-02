@@ -212,12 +212,16 @@ class Player:
 
         self.no_cards_remain = False
 
-        self.bio = self.get_data(param="bio")
+        self.bio_sex = "inited"
+        self.bio_age = 0
+        self.bio_pro = 0
+        self.bio_hob = 0
+        self.get_data(param="bio")
         self.profession = self.get_data(param="profession")
         self.health = self.get_data(param="health")
-        self.health_st = "not_defined"
+        self.health_st = "inited"
         self.phobia = self.get_data(param="phobia")
-        self.phobia_st = "not_defined"
+        self.phobia_st = "inited"
         self.hobby = self.get_data(param="hobby")
         self.baggage = self.get_data(param="baggage")
         self.fact1 = self.get_data(param="fact")
@@ -234,7 +238,7 @@ class Player:
         param=="sql_keys" - выдает значения полученные из таблицы
         """
         if param == "full":
-            return [self.id, self.name, self.bio, self.profession, self.health, self.health_st,
+            return [self.id, self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health, self.health_st,
                     self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
                     self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2]
         elif param == "sql_keys":
@@ -256,22 +260,22 @@ class Player:
             return -1
 
     def get_data(self, param):
+        result = "inited"
         if param == "bio":
-            age = sum(random.randint(0, 100) for _ in range(3)) // 3
-            if age < 18: age = 18
-            exp_prof = min(random.randint(0, age - 18) for _ in range(3))
-            exp_hobby = min(random.randint(0, age - 16) for _ in range(3))
+            self.age = sum(random.randint(0, 100) for _ in range(3)) // 3
+            if self.age < 18: self.age = 18
+            self.bio_pro = min(random.randint(0, self.age - 18) for _ in range(3))
+            self.bio_age = min(random.randint(0, self.age - 16) for _ in range(3))
             t_rand = random.randint(0, 3) == 0
             if t_rand == 0:
-                sex = "Муж."
+                self.bio_sex = "Муж."
             elif t_rand == 1:
-                sex = "Муж. бесплоден"
+                self.bio_sex = "Муж. бесплоден"
             elif t_rand == 2:
-                sex = "Жен."
+                self.bio_sex = "Жен."
             else:
-                sex = "Жен. бесплодна"
+                self.bio_sex = "Жен. бесплодна"
 
-            result = f"{sex}, возраст: {age}, стаж работы: {exp_prof}, стаж хобби: {exp_hobby}"
         else:
             try:
                 sqlite_connection = sqlite3.connect('BunkerDB.db')
@@ -309,11 +313,14 @@ class Player:
                     sqlite_connection.close()
 
         if param == "health" and abss == 0:
-            self.health_st = random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
+            self.health_st = random.choice(["10% тяжести", "30% тяжести", "60% тяжести", "100% тяжести"])
+        elif param == "health" and abss == 1:
+            self.health_st = "Не применимо"
         if param == "phobia" and abss == 0:
-            self.phobia_st = random.choice([" 10% тяжести", " 30% тяжести", " 60% тяжести", " 100% тяжести"])
+            self.phobia_st = random.choice(["10% тяжести", "30% тяжести", "60% тяжести", "100% тяжести"])
+        elif param == "phobia" and abss == 1:
+            self.phobia_st = "Не применимо"
 
-        # self.parent.browser.append(result)
         if result == "no_cards_remain":
             self.no_cards_remain = True
         return result
@@ -322,7 +329,7 @@ class Player:
         print("__del__ is called")
 
     def return_cards_to_deck(self):
-        """возвращает значения remain (+1) для текущих параметров"""
+        """Возвращает значения remain (+1) для текущих параметров"""
         params = self.get_info("sql_keys")
         try:
             sqlite_connection = sqlite3.connect('BunkerDB.db')
