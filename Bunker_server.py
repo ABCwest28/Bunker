@@ -189,7 +189,7 @@ class Server(QMainWindow):
     def add_new_player(self, name, sock):
         player = Player(parent=self, name=name, sock=sock)
         if player.no_cards_remain:
-            player = None
+            player.return_cards_to_deck()
             sock.write("01:".encode())
             sock.write("\n".encode())
             sock.close()
@@ -198,6 +198,7 @@ class Server(QMainWindow):
             self.browser.append(f"Добавлен игрок {player.get_info()}")
 
     def set_full_number(self):
+        """remain = number для всех записей в бд"""
         try:
             sqlite_connection = sqlite3.connect('BunkerDB.db')
             cursor = sqlite_connection.cursor()
