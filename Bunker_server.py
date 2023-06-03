@@ -150,7 +150,7 @@ class Server(QMainWindow):
                         if cur_player.name == des_command:
                             uniq = False
                     if uniq:
-                        self.add_new_player(name=des_command, sock=sock, id=len(self.players))
+                        self.add_new_player(name=des_command, sock=sock)
                     else:
                         sock.write("03:".encode())  # Игрок с этим ником уже есть
                         sock.write("\n".encode())
@@ -171,7 +171,7 @@ class Server(QMainWindow):
         if not self.status:
             for cur_player in self.players:
                 if isinstance(cur_player, Player):
-                    if cur_player.get_id_by_sock(sock) != -1:
+                    if cur_player.get_name_by_sock(sock) is not None:
                         cur_player.return_cards_to_deck()
                         self.players.remove(cur_player)
                 else:
@@ -180,8 +180,8 @@ class Server(QMainWindow):
             pass
         sock.close()
 
-    def add_new_player(self, name, sock, id):
-        player = Player(parent=self, name=name, sock=sock, id=id)
+    def add_new_player(self, name, sock):
+        player = Player(parent=self, name=name, sock=sock)
         if player.no_cards_remain:
             player = None
             sock.write("01:".encode())
@@ -209,11 +209,10 @@ class Server(QMainWindow):
 
 
 class Player:
-    def __init__(self, parent, name, sock, id):
+    def __init__(self, parent, name, sock):
         self.parent = parent
         self.name = name
         self.sock = sock
-        self.id = int(id)
 
         self.no_cards_remain = False
 
@@ -239,11 +238,11 @@ class Player:
 
     def get_info(self, param="browser"):
         """
-        param=="full" - выдает полную инфу
+        param=="browser" - выдает инфу для уведомления в browser
         param=="sql_keys" - выдает значения полученные из таблицы
         """
         if param == "browser":
-            return [self.id, self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health, self.health_st,
+            return [self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health, self.health_st,
                     self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
                     self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2]
         elif param == "sql_keys":
@@ -252,17 +251,19 @@ class Player:
         else:
             return "wrong param"
 
-    def get_sock_by_id(self, id):
-        if id == self.id:
+    def get_sock_by_name(self, name):
+        """Возвращает socket player-а если name совпал с name-ом аргумента, None если не совпало"""
+        if name == self.name:
             return self.sock
         else:
-            return False
+            return None
 
-    def get_id_by_sock(self, sock):
+    def get_name_by_sock(self, sock):
+        """Возвращает имя player-а если ссылка на socket совпала с socket-ом аргумента, None если не совпало"""
         if sock == self.sock:
-            return self.id
+            return self.name
         else:
-            return -1
+            return None
 
     def get_data(self, param):
         result = "inited"
