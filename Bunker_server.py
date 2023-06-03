@@ -121,7 +121,6 @@ class Server(QMainWindow):
         self.setFont(self.font0)
 
     def new_socket_slot(self):
-        """is_first"""
         sock = self.server.nextPendingConnection()
 
         peer_name = str(sock.peerName())
@@ -134,32 +133,34 @@ class Server(QMainWindow):
         sock.disconnected.connect(lambda: self.disconnected_slot(sock))
 
     def read_data_slot(self, sock):
-        while sock.bytesAvailable():
-            datagram = sock.read(sock.bytesAvailable())
-
-        message = datagram.decode()
-        type_command = message[:3]
-        des_command = message[3:]
-        if type_command == "00:":
-            if len(self.players) == self.limit_players:
-                sock.write("02:".encode())  # Достигнут лимит игроков
-                sock.close()
-            else:
-                """проверяем уникальность и если норм то добавляем"""
-                uniq = True
-                for cur_player in self.players:
-                    if cur_player.name == des_command:
-                        uniq = False
-                if uniq:
-                    self.add_new_player(name=des_command, sock=sock, id=len(self.players))
-                else:
-                    sock.write("03:".encode())  # Игрок с этим ником уже есть
+        message = sock.readAll().data().decode()
+        commands = message.split("\n")[:-1]
+        for command in commands:
+            type_command = command[:3]
+            des_command = command[3:]
+            if type_command == "00:":
+                if len(self.players) == self.limit_players:
+                    sock.write("02:".encode())  # Достигнут лимит игроков
+                    sock.write("\n".encode())
                     sock.close()
+                else:
+                    """проверяем уникальность и если норм то добавляем"""
+                    uniq = True
+                    for cur_player in self.players:
+                        if cur_player.name == des_command:
+                            uniq = False
+                    if uniq:
+                        self.add_new_player(name=des_command, sock=sock, id=len(self.players))
+                    else:
+                        sock.write("03:".encode())  # Игрок с этим ником уже есть
+                        sock.write("\n".encode())
+                        sock.close()
 
-        elif type_command == "04:":
-            sock.write(("04:" + str(len(self.players) == 1)).encode())
-        else:
-            self.browser.append("UNKNOWN_COMMAND: "+type_command+des_command)
+            elif type_command == "04:":
+                sock.write(("05:" + str(len(self.players) == 1)).encode())
+                sock.write("\n".encode())
+            else:
+                self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
     def disconnected_slot(self, sock):
         """НУЖНО ПОДУМАТЬ ИГРОК ВЫГНАН ДИСКОНЕКТНУЛСА """
@@ -184,6 +185,7 @@ class Server(QMainWindow):
         if player.no_cards_remain:
             player = None
             sock.write("01:".encode())
+            sock.write("\n".encode())
             sock.close()
         else:
             self.players.append(player)
@@ -221,10 +223,10 @@ class Player:
         self.bio_hob = 0
         self.get_data(param="bio")
         self.profession = self.get_data(param="profession")
-        self.health = self.get_data(param="health")
         self.health_st = "inited"
-        self.phobia = self.get_data(param="phobia")
+        self.health = self.get_data(param="health")
         self.phobia_st = "inited"
+        self.phobia = self.get_data(param="phobia")
         self.hobby = self.get_data(param="hobby")
         self.baggage = self.get_data(param="baggage")
         self.fact1 = self.get_data(param="fact")
@@ -265,10 +267,10 @@ class Player:
     def get_data(self, param):
         result = "inited"
         if param == "bio":
-            self.age = sum(random.randint(0, 100) for _ in range(3)) // 3
-            if self.age < 18: self.age = 18
-            self.bio_pro = min(random.randint(0, self.age - 18) for _ in range(3))
-            self.bio_age = min(random.randint(0, self.age - 16) for _ in range(3))
+            self.bio_age = sum(random.randint(0, 100) for _ in range(3)) // 3
+            if self.bio_age < 18: self.bio_age = 18
+            self.bio_pro = min(random.randint(0, self.bio_age - 18) for _ in range(3))
+            self.bio_hob = min(random.randint(0, self.bio_age - 16) for _ in range(3))
             t_rand = random.randint(0, 3) == 0
             if t_rand == 0:
                 self.bio_sex = "Муж."

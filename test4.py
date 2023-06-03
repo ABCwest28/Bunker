@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
                              QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
-from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
+from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress, QNetworkProxy
 import font_resources_rc
@@ -54,24 +54,24 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_discon = QPushButton("Disconnect", self)
         self.btn_start = QPushButton("Start", self)
 
-        self.initUi()
+        self.init_ui()
         self.show()
 
     def closeEvent(self, event):
         self.sock.close()
         event.accept()
 
-    def initUi(self):
+    def init_ui(self):
         self.setWindowTitle('Bunker Client')
         self.setMaximumSize(500, 160)
         self.setMinimumSize(380, 140)
 
         self.setCentralWidget(self.wrapper)
 
-        self.set_font_Google()
+        self.set_font_google()
 
         self.line_edit_ip.setPlaceholderText("192.168.0.1")
-        self.initUi_line_edit_ip_validation()
+        self.set_line_edit_ip_validation()
 
         self.btn_con.setEnabled(False)
         self.btn_con.clicked.connect(self.connect_button_event)
@@ -94,11 +94,11 @@ class BunkerClientStartWindow(QMainWindow):
 
         self.init_layouts()
 
-    def initUi_line_edit_ip_validation(self):
-        ipRange = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                               # Часть регулярного выржение
-        self.ipRegex = QRegExp("^" + ipRange + "\\." + ipRange + "\\." + ipRange + "\\." + ipRange + "$")   # Само регулярное выражение
-        self.ipValidator = QRegExpValidator(self.ipRegex, self)                                             # Валидатор для QLineEdit
-        self.line_edit_ip.setValidator(self.ipValidator)
+    def set_line_edit_ip_validation(self):
+        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                               # Часть регулярного выржение
+        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")   # Само регулярное выражение
+        ip_validator = QRegExpValidator(ip_regex, self)                                             # Валидатор для QLineEdit
+        self.line_edit_ip.setValidator(ip_validator)
         self.line_edit_ip.validator()
 
     def init_layouts(self):
@@ -116,13 +116,13 @@ class BunkerClientStartWindow(QMainWindow):
         self.v_layout_1.addWidget(self.btn_start)
         self.wrapper.setLayout(self.v_layout_1)
 
-    def set_font_Google(self):
-        fontId = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
+    def set_font_google(self):
+        font_id = QFontDatabase.addApplicationFont(":/fonts/GoogleSans-Regular.ttf")
 
-        if fontId == 0:
-            fontName = QFontDatabase.applicationFontFamilies(fontId)[0]
-            self.font0 = QFont(fontName, 16)
-            self.font1 = QFont(fontName, 10)
+        if font_id == 0:
+            font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
+            self.font0 = QFont(font_name, 16)
+            self.font1 = QFont(font_name, 10)
         else:
             self.font0 = QFont()
             self.font1 = QFont()
@@ -167,8 +167,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.setMinimumSize(380, 400)
             self.setMaximumSize(500, 450)
 
-            if self.isFirst:
-                self.btn_start.show()
+            self.sock.write("04:".encode())
 
             self.line_edit_nik.setEnabled(False)
             self.line_edit_ip.setEnabled(False)
@@ -177,18 +176,23 @@ class BunkerClientStartWindow(QMainWindow):
             self.statusBar().showMessage(f"Connection failed")
 
     def read_data_slot(self):
-        """обрабатывает получаемые сообщения"""
+        """Обрабатывает получаемые сообщения"""
         while self.sock.bytesAvailable():
             datagram = self.sock.read(self.sock.bytesAvailable())
         message = datagram.decode()
 
         type_command = message[:3]
+        des_command = message[3:]
         if type_command == "01:":
             self.statusBar().showMessage("Не хватило карт для вашего добавления")
         elif type_command == "02:":
             self.statusBar().showMessage("достигнут лимит игроков")
         elif type_command == "03:":
             self.statusBar().showMessage("никнейм игрока не уникален")
+        elif type_command == "05:":
+            self.isFirst = des_command
+            if self.isFirst:
+                self.btn_start.show()
         else:
             self.text_browser.append('Server: {}'.format(message))
 
@@ -213,13 +217,13 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_ip.setEnabled(True)
 
     def start_button_event(self):
-        """отправка сигнала на серевер по запуску игры"""
+        """Отправка сигнала на серевер по запуску игры"""
         self.main_window.show()
         self.main_window.label_nik.setText(self.line_edit_nik.text())
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):
-        """основное окно игры"""
+        """Основное окно игры"""
         def __init__(self, parent):
             super().__init__()
             self.parent = parent
@@ -236,21 +240,22 @@ class BunkerClientStartWindow(QMainWindow):
             self.widget_history = QWidget()
 
             self.init_widget_player()
-            self.init_widget_aboutAll()
+            self.init_widget_about_all()
             self.init_widget_voting()
             self.init_widget_history()
 
             self.btn_leave = QPushButton("Покинуть игру")
 
-            self.initUi()
-            self.init_grid()
-            self.set_tooltips()
+            self.init_ui()
 
-        def initUi(self):
+        def init_ui(self):
             self.setMinimumSize(600, 500)
 
             self.setCentralWidget(self.wrapper)
             self.btn_leave.clicked.connect(self.btn_leave_event)
+
+            self.init_grid()
+            self.set_tooltips()
 
         def init_grid(self):
             self.grid_wrapper.addWidget(self.label_nik, 0, 0)
@@ -264,18 +269,23 @@ class BunkerClientStartWindow(QMainWindow):
             self.icon_reveal = QIcon("imgs/reveal.png")
 
             self.label_profession = QLabel("Профессия")
-            self.label_bio =        QLabel("Пол и возраст")
-            self.label_health =     QLabel("Здоровье")
-            self.label_phobia =     QLabel("Фобия")
+            self.label_bio =        QLabel("Пол/возраст/стаж работы/стаж хобби")
+            self.label_health =     QLabel("Здоровье/стадия")
+            self.label_phobia =     QLabel("Фобия/стадия")
             self.label_hobby =      QLabel("Хобби")
             self.label_baggage =    QLabel("Багаж")
             self.label_fact1 =      QLabel("Факт №1")
             self.label_fact2 =      QLabel("Факт №2")
 
             self.line_profession =  QLineEdit()
-            self.line_bio =         QLineEdit()
+            self.line_bio_sex =     QLineEdit()
+            self.line_bio_age =     QLineEdit()
+            self.line_bio_pro =     QLineEdit()
+            self.line_bio_hob =     QLineEdit()
             self.line_health =      QLineEdit()
+            self.line_health_st =   QLineEdit()
             self.line_phobia =      QLineEdit()
+            self.line_phobia_st =   QLineEdit()
             self.line_hobby =       QLineEdit()
             self.line_baggage =     QLineEdit()
             self.line_fact1 =       QLineEdit()
@@ -311,31 +321,36 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_player.addWidget(self.label_fact1,        6, 0)
             self.grid_player.addWidget(self.label_fact2,        7, 0)
 
-            self.grid_player.addWidget(self.line_profession,    0, 1)
-            self.grid_player.addWidget(self.line_bio,           1, 1)
-            self.grid_player.addWidget(self.line_health,        2, 1)
-            self.grid_player.addWidget(self.line_phobia,        3, 1)
-            self.grid_player.addWidget(self.line_hobby,         4, 1)
-            self.grid_player.addWidget(self.line_baggage,       5, 1)
-            self.grid_player.addWidget(self.line_fact1,         6, 1)
-            self.grid_player.addWidget(self.line_fact2,         7, 1)
+            self.grid_player.addWidget(self.line_profession,    0, 1, 1, 4)
+            self.grid_player.addWidget(self.line_bio_sex,       1, 1)
+            self.grid_player.addWidget(self.line_bio_age,       1, 2)
+            self.grid_player.addWidget(self.line_bio_pro,       1, 3)
+            self.grid_player.addWidget(self.line_bio_hob,       1, 4)
+            self.grid_player.addWidget(self.line_health,        2, 1, 1, 3)
+            self.grid_player.addWidget(self.line_health_st,     2, 4)
+            self.grid_player.addWidget(self.line_phobia,        3, 1, 1, 3)
+            self.grid_player.addWidget(self.line_phobia_st,     3, 4)
+            self.grid_player.addWidget(self.line_hobby,         4, 1, 1, 4)
+            self.grid_player.addWidget(self.line_baggage,       5, 1, 1, 4)
+            self.grid_player.addWidget(self.line_fact1,         6, 1, 1, 4)
+            self.grid_player.addWidget(self.line_fact2,         7, 1, 1, 4)
 
-            self.grid_player.addWidget(self.btn_profession,     0, 2)
-            self.grid_player.addWidget(self.btn_bio,            1, 2)
-            self.grid_player.addWidget(self.btn_health,         2, 2)
-            self.grid_player.addWidget(self.btn_phobia,         3, 2)
-            self.grid_player.addWidget(self.btn_hobby,          4, 2)
-            self.grid_player.addWidget(self.btn_baggage,        5, 2)
-            self.grid_player.addWidget(self.btn_fact1,          6, 2)
-            self.grid_player.addWidget(self.btn_fact2,          7, 2)
+            self.grid_player.addWidget(self.btn_profession,     0, 5)
+            self.grid_player.addWidget(self.btn_bio,            1, 5)
+            self.grid_player.addWidget(self.btn_health,         2, 5)
+            self.grid_player.addWidget(self.btn_phobia,         3, 5)
+            self.grid_player.addWidget(self.btn_hobby,          4, 5)
+            self.grid_player.addWidget(self.btn_baggage,        5, 5)
+            self.grid_player.addWidget(self.btn_fact1,          6, 5)
+            self.grid_player.addWidget(self.btn_fact2,          7, 5)
 
-            self.grid_player.addWidget(self.btn_action_card1, 8, 0, 1, 3)
-            self.grid_player.addWidget(self.btn_action_card2, 9, 0, 1, 3)
+            self.grid_player.addWidget(self.btn_action_card1, 8, 0, 1, 6)
+            self.grid_player.addWidget(self.btn_action_card2, 9, 0, 1, 6)
 
             self.widget_player.setLayout(self.grid_player)
             self.tab.addTab(self.widget_player, "О себе")
 
-        def init_widget_aboutAll(self):
+        def init_widget_about_all(self):
             self.tab.addTab(self.widget_aboutAll, "Общее")
 
         def init_widget_voting(self):
@@ -352,7 +367,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.tab.addTab(self.widget_history, "История")
 
         def set_tooltips(self):
-            """устанавливает всплывающие подсказки"""
+            """Устанавливает всплывающие подсказки"""
             self.label_nik.setToolTip("Ваш ник")
 
             self.tab.setTabToolTip(0, "Окно информации о своем персонаже")
