@@ -23,7 +23,7 @@ class BunkerClientStartWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.isFirst = True
+        self.isFirst = False
         """True - первый игрок, может запустить сессию"""
 
         self.main_window = self.BunkerClientMainWindow(self)
@@ -191,9 +191,12 @@ class BunkerClientStartWindow(QMainWindow):
             elif type_command == "03:":
                 self.statusBar().showMessage("никнейм игрока не уникален")
             elif type_command == "05:":
-                self.isFirst = des_command
-                if self.isFirst:
+                if des_command == "1":
+                    self.isFirst = True
                     self.btn_start.show()
+                else:
+                    self.isFirst = False
+                    self.btn_start.hide()
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 

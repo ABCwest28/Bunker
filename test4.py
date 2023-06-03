@@ -23,7 +23,7 @@ class BunkerClientStartWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.isFirst = True
+        self.isFirst = False
         """True - первый игрок, может запустить сессию"""
 
         self.main_window = self.BunkerClientMainWindow(self)
@@ -156,6 +156,7 @@ class BunkerClientStartWindow(QMainWindow):
         """При успешном подключении"""
         if self.sock.state() == QAbstractSocket.ConnectedState:
             self.sock.write(("00:" + self.line_edit_nik.text()).encode())
+            self.sock.write("\n".encode())
 
             print("Успешно подключено к серверу")
             self.statusBar().showMessage(f"Connected")
@@ -168,6 +169,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.setMaximumSize(500, 450)
 
             self.sock.write("04:".encode())
+            self.sock.write("\n".encode())
 
             self.line_edit_nik.setEnabled(False)
             self.line_edit_ip.setEnabled(False)
@@ -177,24 +179,26 @@ class BunkerClientStartWindow(QMainWindow):
 
     def read_data_slot(self):
         """Обрабатывает получаемые сообщения"""
-        while self.sock.bytesAvailable():
-            datagram = self.sock.read(self.sock.bytesAvailable())
-        message = datagram.decode()
-
-        type_command = message[:3]
-        des_command = message[3:]
-        if type_command == "01:":
-            self.statusBar().showMessage("Не хватило карт для вашего добавления")
-        elif type_command == "02:":
-            self.statusBar().showMessage("достигнут лимит игроков")
-        elif type_command == "03:":
-            self.statusBar().showMessage("никнейм игрока не уникален")
-        elif type_command == "05:":
-            self.isFirst = des_command
-            if self.isFirst:
-                self.btn_start.show()
-        else:
-            self.text_browser.append('Server: {}'.format(message))
+        message = self.sock.readAll().data().decode()
+        commands = message.split("\n")[:-1]
+        for command in commands:
+            type_command = command[:3]
+            des_command = command[3:]
+            if type_command == "01:":
+                self.statusBar().showMessage("Не хватило карт для вашего добавления")
+            elif type_command == "02:":
+                self.statusBar().showMessage("достигнут лимит игроков")
+            elif type_command == "03:":
+                self.statusBar().showMessage("никнейм игрока не уникален")
+            elif type_command == "05:":
+                if des_command == "1":
+                    self.isFirst = True
+                    self.btn_start.show()
+                else:
+                    self.isFirst = False
+                    self.btn_start.hide()
+            else:
+                self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
     def disconnected_slot(self):
         self.disconnect_button_event()

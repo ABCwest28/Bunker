@@ -157,7 +157,10 @@ class Server(QMainWindow):
                         sock.close()
 
             elif type_command == "04:":
-                sock.write(("05:" + str(len(self.players) == 1)).encode())
+                if len(self.players) == 1:
+                    sock.write("05:1".encode())
+                else:
+                    sock.write("05:0".encode())
                 sock.write("\n".encode())
             else:
                 self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
@@ -174,6 +177,9 @@ class Server(QMainWindow):
                     if cur_player.get_name_by_sock(sock) is not None:
                         cur_player.return_cards_to_deck()
                         self.players.remove(cur_player)
+                        if len(self.players) != 0:
+                            self.players[0].sock.write("05:1".encode())
+                            self.players[0].sock.write("\n".encode())
                 else:
                     print("disconnected_slot-> cur_player - не является объектом Player")
         else:
