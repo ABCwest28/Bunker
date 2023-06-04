@@ -1,7 +1,7 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QTabWidget,
-                             QPushButton, QScrollBar, QLineEdit, QHBoxLayout, QSplitter)
+                             QPushButton, QScrollBar, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QScrollArea)
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtCore import Qt
 import font_resources_rc
@@ -64,11 +64,7 @@ class Server(QMainWindow):
         self.hbox.addWidget(self.splitter)
         self.widget_players.setLayout(self.hbox)
 
-        self.grid_players_list = QGridLayout()
-        self.widget_players_list.setLayout(self.grid_players_list)
 
-        self.grid_players_output = QGridLayout()
-        self.widget_players_output.setLayout(self.grid_players_output)
 
         self.label_name =               QLabel("Имя")
         self.label_ip =                 QLabel("IP")
@@ -152,8 +148,8 @@ class Server(QMainWindow):
         self.grid_history = QGridLayout()
 
         self.browser = QTextBrowser()
-        self.horizontal_scrollbar = QScrollBar()
-        self.browser.setHorizontalScrollBar(self.horizontal_scrollbar)
+        self.h_scrollbar_browser = QScrollBar()
+        self.browser.setHorizontalScrollBar(self.h_scrollbar_browser)
         self.btn_clear_history = QPushButton("Очистить историю")
         self.btn_clear_history.clicked.connect(self.clear_history)
         self.grid_history.addWidget(self.browser, 0, 0)
@@ -254,7 +250,7 @@ class Server(QMainWindow):
         sock.close()
 
     def add_new_player(self, name, sock):
-        player = Player(parent=self, name=name, sock=sock)
+        player = Player(parent=self, name=name, sock=sock, num=len(self.players))
         if player.no_cards_remain:
             player.return_cards_to_deck()
             sock.write("01:".encode())
@@ -283,10 +279,11 @@ class Server(QMainWindow):
 
 
 class Player:
-    def __init__(self, parent, name, sock):
+    def __init__(self, parent, name, sock, num):
         self.parent = parent
         self.name = name
         self.sock = sock
+        self.status = "Не изгнан"
 
         self.no_cards_remain = False
 
@@ -309,6 +306,15 @@ class Player:
 
         self.is_action_card1 = True
         self.is_action_card2 = True
+
+        self.ui_btn_turn = QPushButton(str(num))
+        self.ui_btn_name = QPushButton(self.name)
+        self.ui_btn_status = QPushButton(self.status)
+        self.ui_hbox = QHBoxLayout()
+        self.ui_hbox.addWidget(self.ui_btn_turn)
+        self.ui_hbox.addWidget(self.ui_btn_name)
+        self.ui_hbox.addWidget(self.ui_btn_status)
+        self.parent.vbox_players_list.addLayout(self.ui_hbox)
 
     def get_info(self, param="browser"):
         """
