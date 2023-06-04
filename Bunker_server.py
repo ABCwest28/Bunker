@@ -1,7 +1,7 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QTabWidget,
-                             QPushButton, QScrollBar)
+                             QPushButton, QScrollBar, QLineEdit)
 from PyQt5.QtGui import QFont, QFontDatabase
 import font_resources_rc
 
@@ -53,6 +53,7 @@ class Server(QMainWindow):
     def init_tab_players(self):
         self.widget_players = QWidget()
         self.widget_players_list = QWidget()
+        self.widget_players_list.setMinimumSize(200, 100)
         self.widget_players_output = QWidget()
 
         self.grid_players = QGridLayout()
@@ -63,22 +64,70 @@ class Server(QMainWindow):
         self.grid_players_list = QGridLayout()
         self.widget_players_list.setLayout(self.grid_players_list)
 
-        self.label_name             = QLabel("Имя")
-        self.label_ip               = QLabel("ip")
-        self.label_profession       = QLabel("Профессия")
-        self.label_bio              = QLabel("Пол и возраст")
-        self.label_health           = QLabel("Здоровье")
-        self.label_health_st        = QLabel("ip")
-        self.label_phobia           = QLabel("Фобия")
-        self.label_phobia_st        = QLabel("ip")
-        self.label_hobby            = QLabel("Хобби")
-        self.label_baggage          = QLabel("Багаж")
-        self.label_fact1            = QLabel("Факт №1")
-        self.label_fact2            = QLabel("Факт №2")
-        self.label_action_card1     = QLabel("Карта действия №1")
-        self.label_action_card2     = QLabel("Карта действия №2")
-        self.grid_players_output    = QGridLayout()
+        self.grid_players_output = QGridLayout()
         self.widget_players_output.setLayout(self.grid_players_output)
+
+        self.label_name =               QLabel("Имя")
+        self.label_ip =                 QLabel("ip")
+        self.label_profession =         QLabel("Профессия")
+        self.label_bio =                QLabel("Пол/возраст/стаж работы/стаж хобби")
+        self.label_health =             QLabel("Здоровье/стадия")
+        self.label_phobia =             QLabel("Фобия/стадия")
+        self.label_hobby =              QLabel("Хобби")
+        self.label_baggage =            QLabel("Багаж")
+        self.label_fact1 =              QLabel("Факт №1")
+        self.label_fact2 =              QLabel("Факт №2")
+        self.label_action_card1 =       QLabel("Карта действия №1")
+        self.label_action_card2 =       QLabel("Карта действия №2")
+
+        self.line_name =                QLineEdit()
+        self.line_ip =                  QLineEdit()
+        self.line_profession =          QLineEdit()
+        self.line_bio_sex =             QLineEdit()
+        self.line_bio_age =             QLineEdit()
+        self.line_bio_pro =             QLineEdit()
+        self.line_bio_hob =             QLineEdit()
+        self.line_health =              QLineEdit()
+        self.line_health_st =           QLineEdit()
+        self.line_phobia =              QLineEdit()
+        self.line_phobia_st =           QLineEdit()
+        self.line_hobby =               QLineEdit()
+        self.line_baggage =             QLineEdit()
+        self.line_fact1 =               QLineEdit()
+        self.line_fact2 =               QLineEdit()
+        self.line_action_card1 =        QLineEdit()
+        self.line_action_card2 =        QLineEdit()
+
+        self.grid_players_output.addWidget(self.label_name,         0, 0)
+        self.grid_players_output.addWidget(self.label_ip,           1, 0)
+        self.grid_players_output.addWidget(self.label_profession,   2, 0)
+        self.grid_players_output.addWidget(self.label_bio,          3, 0)
+        self.grid_players_output.addWidget(self.label_health,       4, 0)
+        self.grid_players_output.addWidget(self.label_phobia,       5, 0)
+        self.grid_players_output.addWidget(self.label_hobby,        6, 0)
+        self.grid_players_output.addWidget(self.label_baggage,      7, 0)
+        self.grid_players_output.addWidget(self.label_fact1,        8, 0)
+        self.grid_players_output.addWidget(self.label_fact2,        9, 0)
+        self.grid_players_output.addWidget(self.label_action_card1, 10, 0)
+        self.grid_players_output.addWidget(self.label_action_card2, 11, 0)
+
+        self.grid_players_output.addWidget(self.line_name,          0, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_ip,            1, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_profession,    2, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_bio_sex,       3, 1)
+        self.grid_players_output.addWidget(self.line_bio_age,       3, 2)
+        self.grid_players_output.addWidget(self.line_bio_pro,       3, 3)
+        self.grid_players_output.addWidget(self.line_bio_hob,       3, 4)
+        self.grid_players_output.addWidget(self.line_health,        4, 1, 1, 3)
+        self.grid_players_output.addWidget(self.line_health_st,     4, 4)
+        self.grid_players_output.addWidget(self.line_phobia,        5, 1, 1, 3)
+        self.grid_players_output.addWidget(self.line_phobia_st,     5, 4)
+        self.grid_players_output.addWidget(self.line_hobby,         6, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_baggage,       7, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_fact1,         8, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_fact2,         9, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_action_card1,  10, 1, 1, 4)
+        self.grid_players_output.addWidget(self.line_action_card2,  11, 1, 1, 4)
 
         self.tab.addTab(self.widget_players, "Игроки")
 
@@ -119,6 +168,7 @@ class Server(QMainWindow):
 
         QToolTip.setFont(self.font1)
         self.setFont(self.font0)
+        self.widget_players.setFont(self.font1)
 
     def new_socket_slot(self):
         sock = self.server.nextPendingConnection()
