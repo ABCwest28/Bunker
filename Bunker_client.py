@@ -273,7 +273,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.icon_reveal = QIcon("imgs/reveal.png")
 
             self.label_profession = QLabel("Профессия")
-            self.label_bio =        QLabel("Пол/возраст/стаж работы/стаж хобби")
+            self.label_bio =        QLabel("Био данные")
             self.label_health =     QLabel("Здоровье/стадия")
             self.label_phobia =     QLabel("Фобия/стадия")
             self.label_hobby =      QLabel("Хобби")

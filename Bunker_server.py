@@ -1,8 +1,9 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QTabWidget,
-                             QPushButton, QScrollBar, QLineEdit)
+                             QPushButton, QScrollBar, QLineEdit, QHBoxLayout, QSplitter)
 from PyQt5.QtGui import QFont, QFontDatabase
+from PyQt5.QtCore import Qt
 import font_resources_rc
 
 
@@ -56,10 +57,12 @@ class Server(QMainWindow):
         self.widget_players_list.setMinimumSize(200, 100)
         self.widget_players_output = QWidget()
 
-        self.grid_players = QGridLayout()
-        self.grid_players.addWidget(self.widget_players_list, 0, 0)
-        self.grid_players.addWidget(self.widget_players_output, 0, 1)
-        self.widget_players.setLayout(self.grid_players)
+        self.splitter = QSplitter()
+        self.splitter.addWidget(self.widget_players_list)
+        self.splitter.addWidget(self.widget_players_output)
+        self.hbox = QHBoxLayout()
+        self.hbox.addWidget(self.splitter)
+        self.widget_players.setLayout(self.hbox)
 
         self.grid_players_list = QGridLayout()
         self.widget_players_list.setLayout(self.grid_players_list)
@@ -68,9 +71,9 @@ class Server(QMainWindow):
         self.widget_players_output.setLayout(self.grid_players_output)
 
         self.label_name =               QLabel("Имя")
-        self.label_ip =                 QLabel("ip")
+        self.label_ip =                 QLabel("IP")
         self.label_profession =         QLabel("Профессия")
-        self.label_bio =                QLabel("Пол/возраст/стаж работы/стаж хобби")
+        self.label_bio =                QLabel("Био данные")
         self.label_health =             QLabel("Здоровье/стадия")
         self.label_phobia =             QLabel("Фобия/стадия")
         self.label_hobby =              QLabel("Хобби")
@@ -79,6 +82,19 @@ class Server(QMainWindow):
         self.label_fact2 =              QLabel("Факт №2")
         self.label_action_card1 =       QLabel("Карта действия №1")
         self.label_action_card2 =       QLabel("Карта действия №2")
+
+        self.label_name.setAlignment(Qt.AlignRight)
+        self.label_ip.setAlignment(Qt.AlignRight)
+        self.label_profession.setAlignment(Qt.AlignRight)
+        self.label_bio.setAlignment(Qt.AlignRight)
+        self.label_health.setAlignment(Qt.AlignRight)
+        self.label_phobia.setAlignment(Qt.AlignRight)
+        self.label_hobby.setAlignment(Qt.AlignRight)
+        self.label_baggage.setAlignment(Qt.AlignRight)
+        self.label_fact1.setAlignment(Qt.AlignRight)
+        self.label_fact2.setAlignment(Qt.AlignRight)
+        self.label_action_card1.setAlignment(Qt.AlignRight)
+        self.label_action_card2.setAlignment(Qt.AlignRight)
 
         self.line_name =                QLineEdit()
         self.line_ip =                  QLineEdit()
@@ -160,15 +176,16 @@ class Server(QMainWindow):
 
         if font_id == 0:
             font_name = QFontDatabase.applicationFontFamilies(font_id)[0]
-            self.font0 = QFont(font_name, 14)
-            self.font1 = QFont(font_name, 10)
+            self.font14 = QFont(font_name, 14)
+            self.font10 = QFont(font_name, 10)
         else:
-            self.font0 = QFont()
-            self.font1 = QFont()
+            self.font14 = QFont()
+            self.font10 = QFont()
 
-        QToolTip.setFont(self.font1)
-        self.setFont(self.font0)
-        self.widget_players.setFont(self.font1)
+        QToolTip.setFont(self.font10)
+        self.setFont(self.font14)
+        self.widget_players.setFont(self.font10)
+        self.browser.setFont(self.font10)
 
     def new_socket_slot(self):
         sock = self.server.nextPendingConnection()
