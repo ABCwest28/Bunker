@@ -347,6 +347,7 @@ class Player:
         self.ui_hbox.addWidget(self.ui_btn_name)
         self.ui_hbox.addWidget(self.ui_btn_status)
         self.parent.layout_scroll_content.addLayout(self.ui_hbox)
+        self.ui_btn_name.clicked.connect(self.ui_btn_name_clicked)
 
     def get_info(self, param="browser"):
         """
@@ -468,6 +469,25 @@ class Player:
 
     def update_ui_btn_turn(self, num):
         self.ui_btn_turn.setText(str(num))
+
+    def ui_btn_name_clicked(self):
+        self.parent.line_name.setText(str(self.name))
+        self.parent.line_ip.setText(self.sock.peerAddress().toString()[7:])
+        self.parent.line_profession.setText(str(self.profession))
+        self.parent.line_bio_sex.setText(str(self.bio_sex))
+        self.parent.line_bio_age.setText(str(self.bio_age))
+        self.parent.line_bio_pro.setText(str(self.bio_pro))
+        self.parent.line_bio_hob.setText(str(self.bio_hob))
+        self.parent.line_health.setText(str(self.health))
+        self.parent.line_health_st.setText(str(self.health_st))
+        self.parent.line_phobia.setText(str(self.phobia))
+        self.parent.line_phobia_st.setText(str(self.phobia_st))
+        self.parent.line_hobby.setText(str(self.hobby))
+        self.parent.line_baggage.setText(str(self.baggage))
+        self.parent.line_fact1.setText(str(self.fact1))
+        self.parent.line_fact2.setText(str(self.fact2))
+        self.parent.line_action_card1.setText(str(self.action_card1))
+        self.parent.line_action_card2.setText(str(self.action_card2))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
