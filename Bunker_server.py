@@ -262,7 +262,9 @@ class Server(QMainWindow):
                 if isinstance(cur_player, Player):
                     if cur_player.get_name_by_sock(sock) is not None:
                         cur_player.return_cards_to_deck()
+                        cur_player.del_ui()
                         self.players.remove(cur_player)
+                        self.update_nums()
                         if len(self.players) != 0:
                             self.players[0].sock.write("05:1".encode())
                             self.players[0].sock.write("\n".encode())
@@ -299,6 +301,10 @@ class Server(QMainWindow):
         finally:
             if sqlite_connection:
                 sqlite_connection.close()
+
+    def update_nums(self):
+        for num, player in enumerate(self.players):
+            player.update_ui_btn_turn(num)
 
 
 class Player:
@@ -453,6 +459,15 @@ class Player:
             sqlite_connection.commit()
         except sqlite3.Error as error:
             self.parent.browser.append(f"return_cards_to_deck->Ошибка при работе с SQLite: {error}")
+
+    def del_ui(self):
+        self.ui_btn_turn.deleteLater()
+        self.ui_btn_name.deleteLater()
+        self.ui_btn_status.deleteLater()
+        self.ui_hbox.deleteLater()
+
+    def update_ui_btn_turn(self, num):
+        self.ui_btn_turn.setText(str(num))
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
