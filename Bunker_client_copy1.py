@@ -84,7 +84,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_discon.clicked.connect(self.disconnect_button_event)
 
         self.btn_start.hide()
-        self.btn_start.clicked.connect(self.start_button_event)
+        self.btn_start.clicked.connect(lambda: self.start_button_event(None))
 
         self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
@@ -159,7 +159,7 @@ class BunkerClientStartWindow(QMainWindow):
             self.sock.write("\n".encode())
 
             print("Успешно подключено к серверу")
-            self.statusBar().showMessage(f"Connected")
+            self.statusBar().showMessage("Connected")
 
             self.btn_con.hide()
             self.btn_discon.show()
@@ -184,12 +184,16 @@ class BunkerClientStartWindow(QMainWindow):
         for command in commands:
             type_command = command[:3]
             des_command = command[3:]
+
             if type_command == "01:":
                 self.statusBar().showMessage("Не хватило карт для вашего добавления")
+
             elif type_command == "02:":
-                self.statusBar().showMessage("достигнут лимит игроков")
+                self.statusBar().showMessage("Достигнут лимит игроков")
+
             elif type_command == "03:":
-                self.statusBar().showMessage("никнейм игрока не уникален")
+                self.statusBar().showMessage("Никнейм игрока не уникален")
+
             elif type_command == "05:":
                 if des_command == "1":
                     self.isFirst = True
@@ -197,6 +201,12 @@ class BunkerClientStartWindow(QMainWindow):
                 else:
                     self.isFirst = False
                     self.btn_start.hide()
+
+            elif type_command == "06:":
+                self.statusBar().showMessage("Игра уже начата")
+
+            elif type_command == "07:":
+                self.start_button_event(des_command)
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
@@ -220,10 +230,13 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_nik.setEnabled(True)
         self.line_edit_ip.setEnabled(True)
 
-    def start_button_event(self):
+    def start_button_event(self, name):
         """Отправка сигнала на серевер по запуску игры"""
         self.main_window.show()
-        self.main_window.label_nik.setText(self.line_edit_nik.text())
+        if name is None:
+            self.main_window.label_nik.setText(self.line_edit_nik.text())
+        else:
+            self.main_window.label_nik.setText(str(name))
         self.hide()
 
     class BunkerClientMainWindow(QMainWindow):

@@ -225,23 +225,41 @@ class Server(QMainWindow):
         for command in commands:
             type_command = command[:3]
             des_command = command[3:]
+
             if type_command == "00:":
                 if len(self.players) == self.limit_players:
                     sock.write("02:".encode())  # Достигнут лимит игроков
                     sock.write("\n".encode())
                     sock.close()
                 else:
-                    """проверяем уникальность и если норм то добавляем"""
-                    uniq = True
-                    for cur_player in self.players:
-                        if cur_player.name == des_command:
-                            uniq = False
-                    if uniq:
-                        self.add_new_player(name=des_command, sock=sock)
+                    if self.status:
+                        is_in_players = False
+                        name = ""
+                        for cur_player in self.players:
+                            if cur_player.is_player_by_peer_address(sock.peerAddress().toString()):
+                                is_in_players = True
+                                cur_player.sock = sock
+                                cur_player.peer_address = sock.peerAddress().toString()
+                                name = cur_player.name
+                        if is_in_players:
+                            sock.write(f"07:{name}".encode())  # Вы были в игре, возвращайтесь
+                            sock.write("\n".encode())
+                        else:
+                            sock.write("06:".encode())  # Игра была начата без вас
+                            sock.write("\n".encode())
+                            sock.close()
                     else:
-                        sock.write("03:".encode())  # Игрок с этим ником уже есть
-                        sock.write("\n".encode())
-                        sock.close()
+                        """проверяем уникальность и если норм то добавляем"""
+                        uniq = True
+                        for cur_player in self.players:
+                            if cur_player.name == des_command:
+                                uniq = False
+                        if uniq:
+                            self.add_new_player(name=des_command, sock=sock)
+                        else:
+                            sock.write("03:".encode())  # Игрок с этим ником уже есть
+                            sock.write("\n".encode())
+                            sock.close()
 
             elif type_command == "04:":
                 if len(self.players) == 1:
@@ -332,6 +350,7 @@ class Player:
         self.sock = sock
         self.status = "В сети"
         """В сети, Изгнан, Не в сети"""
+        self.peer_address = sock.peerAddress().toString()
 
         self.no_cards_remain = False
 
@@ -389,6 +408,13 @@ class Player:
             return self.sock
         else:
             return None
+
+    def is_player_by_peer_address(self, address):
+        """Возвращает True player-а если peer_address совпал с address-ом аргумента, None если не совпало"""
+        if self.peer_address == address:
+            return True
+        else:
+            return False
 
     def get_name_by_sock(self, sock):
         """Возвращает имя player-а если ссылка на socket совпала с socket-ом аргумента, None если не совпало"""
