@@ -287,6 +287,7 @@ class Server(QMainWindow):
         player = Player(parent=self, name=name, sock=sock, num=len(self.players))
         if player.no_cards_remain:
             player.return_cards_to_deck()
+            player.del_ui()
             sock.write("01:".encode())
             sock.write("\n".encode())
             sock.close()
