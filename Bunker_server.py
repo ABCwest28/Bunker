@@ -35,6 +35,7 @@ class Server(QMainWindow):
         self.label_ip = QLabel(f"Текущий ip: {QNetworkInterface.allAddresses()[1].toString()}")
         self.tab = QTabWidget()
         self.btn_start_stop_session = QPushButton("Начать игру")
+        self.btn_start_stop_session.clicked.connect(self.btn_start_stop_session_clicked)
 
         self.setCentralWidget(self.wrapper)
 
@@ -66,7 +67,7 @@ class Server(QMainWindow):
         self.splitter.addWidget(self.widget_players_output)
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 1)
-        self.splitter.setSizes([1, 1])
+        self.splitter.setSizes([1, 2])
 
         self.vbox_players_list = QVBoxLayout()
         self.widget_players_list.setLayout(self.vbox_players_list)
@@ -269,9 +270,17 @@ class Server(QMainWindow):
                             self.players[0].sock.write("05:1".encode())
                             self.players[0].sock.write("\n".encode())
                 else:
+                    self.browser.append("disconnected_slot-> cur_player - не является объектом Player")
                     print("disconnected_slot-> cur_player - не является объектом Player")
         else:
-            pass
+            for cur_player in self.players:
+                if isinstance(cur_player, Player):
+                    if cur_player.get_name_by_sock(sock) is not None:
+                        cur_player.status = "Не в сети"
+                        cur_player.ui_btn_status.setText("Не в сети")
+                else:
+                    self.browser.append("disconnected_slot-> cur_player - не является объектом Player")
+                    print("disconnected_slot-> cur_player - не является объектом Player")
         sock.close()
 
     def add_new_player(self, name, sock):
@@ -306,13 +315,22 @@ class Server(QMainWindow):
         for num, player in enumerate(self.players):
             player.update_ui_btn_turn(num)
 
+    def btn_start_stop_session_clicked(self):
+        if self.status:
+            self.status = False
+            self.btn_start_stop_session.setText("Начать игру")
+        else:
+            self.status = True
+            self.btn_start_stop_session.setText("Завершить игру")
+
 
 class Player:
     def __init__(self, parent, name, sock, num):
         self.parent = parent
         self.name = name
         self.sock = sock
-        self.status = "Не изгнан"
+        self.status = "В сети"
+        """В сети, Изгнан, Не в сети"""
 
         self.no_cards_remain = False
 
