@@ -1,52 +1,35 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget
-from PyQt5 import QtGui
-import sys
-from random import randint
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QLabel, QWidget, QScrollArea
 
+app = QApplication([])
 
-class AnotherWindow(QWidget):
-    """
-    This "window" is a QWidget. If it has no parent, it
-    will appear as a free-floating window as we want.
-    """
-    def __init__(self):
-        super().__init__()
-        layout = QVBoxLayout()
-        self.label = QLabel("Another Window % d" % randint(0, 100))
-        layout.addWidget(self.label)
-        self.setLayout(layout)
+# Создаем главное окно
+window = QWidget()
 
-    def closeEvent(self, a0: QtGui.QCloseEvent):
-        w.show()
+# Создаем вертикальный макет для главного окна
+layout = QVBoxLayout(window)
 
+# Создаем QScrollArea
+scroll_area = QScrollArea()
 
-class MainWindow(QMainWindow):
+# Создаем QWidget для содержимого
+content_widget = QWidget()
 
-    def __init__(self):
-        super().__init__()
-        self.w = None  # No external window yet.
-        self.button = QPushButton("Push for Window")
-        self.button.clicked.connect(self.show_new_window_1)
-        self.setCentralWidget(self.button)
+# Создаем вертикальный макет для содержимого
+content_layout = QVBoxLayout(content_widget)
 
-    def show_new_window_1(self):
-        if self.w is None:
-            self.w = AnotherWindow()
-        self.w.show()
-        self.close()
+# Добавляем виджеты в макет содержимого
+content_layout.addWidget(QLabel("Label 1"))
+content_layout.addWidget(QLabel("Label 2"))
+content_layout.addWidget(QLabel("Label 3"))
+content_layout.addWidget(QLabel("Label 4"))
+content_layout.addWidget(QLabel("Label 5"))
 
-    def show_new_window_2(self, checked):
-        """Этот метод аналог 1го"""
-        if self.w is None:
-            self.w = AnotherWindow()
-            self.w.show()
+# Устанавливаем содержимое в QScrollArea
+scroll_area.setWidget(content_widget)
 
-        else:
-            self.w.close()  # Close window.
-            self.w = None  # Discard reference.
+# Добавляем QScrollArea в главный макет
+layout.addWidget(scroll_area)
 
-
-app = QApplication(sys.argv)
-w = MainWindow()
-w.show()
-app.exec()
+# Отображаем главное окно
+window.show()
+app.exec_()

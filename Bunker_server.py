@@ -1,7 +1,8 @@
 import sys, sqlite3, random
 from PyQt5.QtNetwork import QTcpServer, QHostAddress, QNetworkInterface
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QTextBrowser, QGridLayout, QLabel, QToolTip, QTabWidget,
-                             QPushButton, QScrollBar, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QScrollArea)
+                             QPushButton, QScrollBar, QLineEdit, QHBoxLayout, QVBoxLayout, QSplitter, QScrollArea,
+                             QSizePolicy)
 from PyQt5.QtGui import QFont, QFontDatabase
 from PyQt5.QtCore import Qt
 import font_resources_rc
@@ -53,18 +54,40 @@ class Server(QMainWindow):
 
     def init_tab_players(self):
         self.widget_players = QWidget()
+        self.box_players = QHBoxLayout()
+        self.widget_players.setLayout(self.box_players)
+
         self.widget_players_list = QWidget()
-        self.widget_players_list.setMinimumSize(200, 100)
         self.widget_players_output = QWidget()
 
-        self.splitter = QSplitter()
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.box_players.addWidget(self.splitter)
         self.splitter.addWidget(self.widget_players_list)
         self.splitter.addWidget(self.widget_players_output)
-        self.hbox = QHBoxLayout()
-        self.hbox.addWidget(self.splitter)
-        self.widget_players.setLayout(self.hbox)
+        self.splitter.setStretchFactor(0, 1)
+        self.splitter.setStretchFactor(1, 1)
+        self.splitter.setSizes([1, 1])
 
+        self.vbox_players_list = QVBoxLayout()
+        self.widget_players_list.setLayout(self.vbox_players_list)
+        self.vbox_players_list.setAlignment(Qt.AlignTop)
 
+        self.scroll_players_list = QScrollArea()
+        self.scroll_players_list.setWidgetResizable(True)
+        self.scroll_players_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_players_list.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scroll_widget_content = QWidget()
+        self.vbox_players_list.addWidget(self.scroll_players_list)
+
+        self.layout_scroll_content = QVBoxLayout()
+        self.layout_scroll_content.setAlignment(Qt.AlignTop)
+        self.scroll_widget_content.setLayout(self.layout_scroll_content)
+
+        self.scroll_players_list.setWidget(self.scroll_widget_content)
+
+        self.grid_players_output = QGridLayout()
+        self.grid_players_output.setAlignment(Qt.AlignTop)
+        self.widget_players_output.setLayout(self.grid_players_output)
 
         self.label_name =               QLabel("Имя")
         self.label_ip =                 QLabel("IP")
@@ -310,11 +333,14 @@ class Player:
         self.ui_btn_turn = QPushButton(str(num))
         self.ui_btn_name = QPushButton(self.name)
         self.ui_btn_status = QPushButton(self.status)
+        self.ui_btn_turn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.ui_btn_name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.ui_btn_status.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         self.ui_hbox = QHBoxLayout()
         self.ui_hbox.addWidget(self.ui_btn_turn)
         self.ui_hbox.addWidget(self.ui_btn_name)
         self.ui_hbox.addWidget(self.ui_btn_status)
-        self.parent.vbox_players_list.addLayout(self.ui_hbox)
+        self.parent.layout_scroll_content.addLayout(self.ui_hbox)
 
     def get_info(self, param="browser"):
         """
@@ -427,7 +453,6 @@ class Player:
             sqlite_connection.commit()
         except sqlite3.Error as error:
             self.parent.browser.append(f"return_cards_to_deck->Ошибка при работе с SQLite: {error}")
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
