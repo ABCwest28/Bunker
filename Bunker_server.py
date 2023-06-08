@@ -267,6 +267,8 @@ class Server(QMainWindow):
                 else:
                     sock.write("05:0".encode())
                 sock.write("\n".encode())
+            elif type_command == "10:":
+                if self.status
             else:
                 self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
@@ -337,10 +339,18 @@ class Server(QMainWindow):
     def btn_start_stop_session_clicked(self):
         if self.status:
             self.status = False
+            self.browser.append("Игра завершена")
             self.btn_start_stop_session.setText("Начать игру")
+            for player in self.players:
+                player.sock.write("09:".encode())  # Игра начата
+                player.sock.write("\n".encode())
         else:
             self.status = True
+            self.browser.append("Игра начата")
             self.btn_start_stop_session.setText("Завершить игру")
+            for player in self.players:
+                player.sock.write("08:".encode())  # Игра начата
+                player.sock.write("\n".encode())
 
 
 class Player:
@@ -517,7 +527,7 @@ class Player:
 
     def ui_btn_name_clicked(self):
         self.parent.line_name.setText(str(self.name))
-        self.parent.line_ip.setText(self.sock.peerAddress().toString()[7:])
+        self.parent.line_ip.setText(self.peer_address[7:])
         self.parent.line_profession.setText(str(self.profession))
         self.parent.line_bio_sex.setText(str(self.bio_sex))
         self.parent.line_bio_age.setText(str(self.bio_age))
@@ -533,6 +543,7 @@ class Player:
         self.parent.line_fact2.setText(str(self.fact2))
         self.parent.line_action_card1.setText(str(self.action_card1))
         self.parent.line_action_card2.setText(str(self.action_card2))
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

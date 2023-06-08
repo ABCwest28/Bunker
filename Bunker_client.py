@@ -207,6 +207,9 @@ class BunkerClientStartWindow(QMainWindow):
 
             elif type_command == "07:":
                 self.start_button_event(des_command)
+
+            elif type_command == "08:":
+                self.start_button_event(self.line_edit_nik.text())
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
@@ -231,7 +234,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_ip.setEnabled(True)
 
     def start_button_event(self, name):
-        """Отправка сигнала на серевер по запуску игры"""
+        """Отправка сигнала на сервер по запуску игры"""
+        self.sock.write("10:".encode())
+        self.sock.write("\n".encode())
         self.main_window.show()
         if name is None:
             self.main_window.label_nik.setText(self.line_edit_nik.text())
