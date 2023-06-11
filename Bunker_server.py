@@ -282,8 +282,8 @@ class Server(QMainWindow):
                             active_player_count += 1
 
                     if active_player_count < self.limit_min_players:
-                        self.browser.append(f"Недостаточно игроков:{active_player_count}")
-                        sock.write(f"12:{active_player_count}".encode())      # Не хватает игроков для старта
+                        self.browser.append(f"Недостаточно игроков:{active_player_count}/{self.limit_min_players}")
+                        sock.write(f"12:{active_player_count}/{self.limit_min_players}".encode())
                         sock.write("\n".encode())
                     else:
                         self.browser.append("Успешная попытка запуска игры")

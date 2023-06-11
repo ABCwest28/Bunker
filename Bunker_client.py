@@ -215,7 +215,8 @@ class BunkerClientStartWindow(QMainWindow):
                 self.text_browser.append("Игра уже начата")
 
             elif type_command == "12:":
-                self.text_browser.append(f"Не хватает игроков для старта, в сети: {des_command}")
+                separated = des_command.split(sep="/")
+                self.text_browser.append(f"Недостаточно игроков для старта: {separated[0]}/{separated[1]}")
 
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
