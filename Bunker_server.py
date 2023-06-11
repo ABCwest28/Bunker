@@ -15,7 +15,8 @@ class Server(QMainWindow):
         self.set_full_number()
 
         self.players = []
-        self.limit_players = 20
+        self.limit_min_players = 4
+        self.limit_max_players = 20
         self.status = False
         """True-игра начата, False-в ожидании"""
 
@@ -227,7 +228,7 @@ class Server(QMainWindow):
             des_command = command[3:]
 
             if type_command == "00:":
-                if len(self.players) == self.limit_players:
+                if len(self.players) == self.limit_max_players:
                     sock.write("02:".encode())  # Достигнут лимит игроков
                     sock.write("\n".encode())
                     sock.close()
@@ -267,8 +268,23 @@ class Server(QMainWindow):
                 else:
                     sock.write("05:0".encode())
                 sock.write("\n".encode())
+
             elif type_command == "10:":
-                if self.status
+                if self.status:
+                    sock.write("11:".encode())  # Игра уже начата
+                    sock.write("\n".encode())
+                else:
+                    active_player_count = 0
+                    for player in self.players:
+                        if player.status == "В сети":
+                            active_player_count += 1
+
+                    if active_player_count < self.limit_min_players:
+                        sock.write(f"12:{active_player_count}".encode())      # Не хватает игроков для старта
+                        sock.write("\n".encode())
+                    else:
+                        for player in self.players:
+                            player.sock.write("08:".encode())  # Старт игры
             else:
                 self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
@@ -342,7 +358,7 @@ class Server(QMainWindow):
             self.browser.append("Игра завершена")
             self.btn_start_stop_session.setText("Начать игру")
             for player in self.players:
-                player.sock.write("09:".encode())  # Игра начата
+                player.sock.write("09:".encode())  # Игра завершена
                 player.sock.write("\n".encode())
         else:
             self.status = True

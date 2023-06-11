@@ -210,6 +210,13 @@ class BunkerClientStartWindow(QMainWindow):
 
             elif type_command == "08:":
                 self.start_button_event(self.line_edit_nik.text())
+
+            elif type_command == "11:":
+                self.text_browser.append("Игра уже начата")
+
+            elif type_command == "12:":
+                self.text_browser.append(f"Не хватает игроков для старта, в сети: {des_command}")
+
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
