@@ -84,7 +84,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_discon.clicked.connect(self.disconnect_button_event)
 
         self.btn_start.hide()
-        self.btn_start.clicked.connect(lambda: self.start_button_event(None))
+        self.btn_start.clicked.connect(self.start_button_event)
 
         self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
@@ -206,10 +206,10 @@ class BunkerClientStartWindow(QMainWindow):
                 self.statusBar().showMessage("Игра уже начата")
 
             elif type_command == "07:":
-                self.start_button_event(des_command)
+                self.start_game_event(des_command)
 
             elif type_command == "08:":
-                self.start_button_event(self.line_edit_nik.text())
+                self.start_game_event(name=None)
 
             elif type_command == "11:":
                 self.text_browser.append("Игра уже начата")
@@ -240,10 +240,12 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_nik.setEnabled(True)
         self.line_edit_ip.setEnabled(True)
 
-    def start_button_event(self, name):
+    def start_button_event(self):
         """Отправка сигнала на сервер по запуску игры"""
         self.sock.write("10:".encode())
         self.sock.write("\n".encode())
+
+    def start_game_event(self, name):
         self.main_window.show()
         if name is None:
             self.main_window.label_nik.setText(self.line_edit_nik.text())

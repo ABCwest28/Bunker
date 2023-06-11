@@ -270,7 +270,9 @@ class Server(QMainWindow):
                 sock.write("\n".encode())
 
             elif type_command == "10:":
+                self.browser.append("Попытка запуска игры")
                 if self.status:
+                    self.browser.append("Игра уже запущена")
                     sock.write("11:".encode())  # Игра уже начата
                     sock.write("\n".encode())
                 else:
@@ -280,11 +282,14 @@ class Server(QMainWindow):
                             active_player_count += 1
 
                     if active_player_count < self.limit_min_players:
+                        self.browser.append(f"Недостаточно игроков:{active_player_count}")
                         sock.write(f"12:{active_player_count}".encode())      # Не хватает игроков для старта
                         sock.write("\n".encode())
                     else:
+                        self.browser.append("Успешная попытка запуска игры")
                         for player in self.players:
                             player.sock.write("08:".encode())  # Старт игры
+
             else:
                 self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
