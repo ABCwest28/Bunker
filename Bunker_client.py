@@ -95,9 +95,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.init_layouts()
 
     def set_line_edit_ip_validation(self):
-        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                               # Часть регулярного выржение
-        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")   # Само регулярное выражение
-        ip_validator = QRegExpValidator(ip_regex, self)                                             # Валидатор для QLineEdit
+        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
+        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")
+        ip_validator = QRegExpValidator(ip_regex, self) # Валидатор для QLineEdit
         self.line_edit_ip.setValidator(ip_validator)
         self.line_edit_ip.validator()
 
@@ -265,6 +265,8 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_wrapper = QGridLayout()
 
             self.label_nik = QLabel()
+
+            self.label_turn = QLabel()
 
             self.tab = QTabWidget()
             self.widget_player = QWidget()
