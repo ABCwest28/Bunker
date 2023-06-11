@@ -206,10 +206,10 @@ class BunkerClientStartWindow(QMainWindow):
                 self.statusBar().showMessage("Игра уже начата")
 
             elif type_command == "07:":
-                self.start_game_event(des_command)
+                self.start_game_event(name=des_command, params=None)
 
             elif type_command == "08:":
-                self.start_game_event(name=None)
+                self.start_game_event(name=None, params=des_command.split(sep="\t"))
 
             elif type_command == "11:":
                 self.text_browser.append("Игра уже начата")
@@ -246,10 +246,11 @@ class BunkerClientStartWindow(QMainWindow):
         self.sock.write("10:".encode())
         self.sock.write("\n".encode())
 
-    def start_game_event(self, name):
+    def start_game_event(self, name, params):
         self.main_window.show()
         if name is None:
             self.main_window.label_nik.setText(self.line_edit_nik.text())
+            self.main_window.fill_characteristic(params=params)
         else:
             self.main_window.label_nik.setText(str(name))
         self.hide()
@@ -322,6 +323,20 @@ class BunkerClientStartWindow(QMainWindow):
             self.line_baggage =     QLineEdit()
             self.line_fact1 =       QLineEdit()
             self.line_fact2 =       QLineEdit()
+
+            self.line_profession.setReadOnly(True)
+            self.line_bio_sex.setReadOnly(True)
+            self.line_bio_age.setReadOnly(True)
+            self.line_bio_pro.setReadOnly(True)
+            self.line_bio_hob.setReadOnly(True)
+            self.line_health.setReadOnly(True)
+            self.line_health_st.setReadOnly(True)
+            self.line_phobia.setReadOnly(True)
+            self.line_phobia_st.setReadOnly(True)
+            self.line_hobby.setReadOnly(True)
+            self.line_baggage.setReadOnly(True)
+            self.line_fact1.setReadOnly(True)
+            self.line_fact2.setReadOnly(True)
 
             self.btn_profession =   QPushButton(self.icon_reveal, "")
             self.btn_bio =          QPushButton(self.icon_reveal, "")
@@ -417,6 +432,23 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_action_card2.setToolTip("Активировать карту действия<br>Можно воспользоваться в любой момент")
 
             self.btn_leave.setToolTip("Покинуть текущую игру<br>Вернуться в сессию будет <b>невозможно</b>")
+
+        def fill_characteristic(self, params):
+            self.line_profession.setText(params[0])
+            self.line_bio_sex.setText(params[1])
+            self.line_bio_age.setText(params[2])
+            self.line_bio_pro.setText(params[3])
+            self.line_bio_hob.setText(params[4])
+            self.line_health.setText(params[5])
+            self.line_health_st.setText(params[6])
+            self.line_phobia.setText(params[7])
+            self.line_phobia_st.setText(params[8])
+            self.line_hobby.setText(params[9])
+            self.line_baggage.setText(params[10])
+            self.line_fact1.setText(params[11])
+            self.line_fact2.setText(params[12])
+            self.btn_action_card1.setText("Активировать карту №1: " + params[13])
+            self.btn_action_card2.setText("Активировать карту №2: " + params[14])
 
         def btn_leave_event(self):
             self.parent.disconnect_button_event()

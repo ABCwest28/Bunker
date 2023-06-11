@@ -15,7 +15,7 @@ class Server(QMainWindow):
         self.set_full_number()
 
         self.players = []
-        self.limit_min_players = 4
+        self.limit_min_players = 1
         self.limit_max_players = 20
         self.status = False
         """True-игра начата, False-в ожидании"""
@@ -214,7 +214,7 @@ class Server(QMainWindow):
         peer_name = str(sock.peerName())
         peer_address = sock.peerAddress().toString()
         peer_port = sock.peerPort()
-        news = 'Connected {} address {}, port {}'.format(peer_name, peer_address, str(peer_port))
+        news = f"Connected {peer_name} address {peer_address}, port {str(peer_port)}"
         self.browser.append(news)
 
         sock.readyRead.connect(lambda: self.read_data_slot(sock))
@@ -229,7 +229,8 @@ class Server(QMainWindow):
 
             if type_command == "00:":
                 if len(self.players) == self.limit_max_players:
-                    sock.write("02:".encode())  # Достигнут лимит игроков
+                    self.browser.append(f"Достигнут лимит игроков: {self.limit_min_players}")
+                    sock.write("02:".encode())
                     sock.write("\n".encode())
                     sock.close()
                 else:
@@ -243,6 +244,7 @@ class Server(QMainWindow):
                                 cur_player.peer_address = sock.peerAddress().toString()
                                 name = cur_player.name
                         if is_in_players:
+                            self.browser.append(f"Игрок {name} вернулся")
                             sock.write(f"07:{name}".encode())  # Вы были в игре, возвращайтесь
                             sock.write("\n".encode())
                         else:
@@ -258,6 +260,7 @@ class Server(QMainWindow):
                         if uniq:
                             self.add_new_player(name=des_command, sock=sock)
                         else:
+                            self.browser.append("Игрок имеет неуникальный никнейм")
                             sock.write("03:".encode())  # Игрок с этим ником уже есть
                             sock.write("\n".encode())
                             sock.close()
@@ -287,8 +290,7 @@ class Server(QMainWindow):
                         sock.write("\n".encode())
                     else:
                         self.browser.append("Успешная попытка запуска игры")
-                        for player in self.players:
-                            player.sock.write("08:".encode())  # Старт игры
+                        self.btn_start_stop_session_clicked()
 
             else:
                 self.browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
@@ -370,7 +372,8 @@ class Server(QMainWindow):
             self.browser.append("Игра начата")
             self.btn_start_stop_session.setText("Завершить игру")
             for player in self.players:
-                player.sock.write("08:".encode())  # Игра начата
+                params = player.get_info(param="start_game")
+                player.sock.write(f"08:{params}".encode())  # Игра начата
                 player.sock.write("\n".encode())
 
 
@@ -420,16 +423,23 @@ class Player:
 
     def get_info(self, param="browser"):
         """
-        param=="browser" - выдает инфу для уведомления в browser
-        param=="sql_keys" - выдает значения полученные из таблицы
+        param=="browser" - возвращает список - информация для уведомления в browser\n
+        param=="sql_keys" - возвращает список - значения полученные только из таблицы (базы данных)\n
+        param=="start_game" - возвращает строку с разделителем /t, для передачи данных клиентам в самом начале игры\n
         """
         if param == "browser":
-            return [self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health, self.health_st,
-                    self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
+            return [self.name, self.bio_sex, self.bio_age, self.bio_pro, self.bio_hob, self.profession, self.health,
+                    self.health_st, self.phobia, self.phobia_st, self.hobby, self.baggage, self.fact1, self.fact2,
                     self.action_card1, self.is_action_card1, self.action_card2, self.is_action_card2]
+
         elif param == "sql_keys":
             return [self.profession, self.health, self.phobia, self.hobby, self.baggage, self.fact1,
                     self.fact2, self.action_card1, self.action_card2]
+
+        elif param == "start_game":
+            return "\t".join([  self.profession, self.bio_sex, str(self.bio_age), str(self.bio_pro), str(self.bio_hob),
+                                self.health, self.health_st, self.phobia, self.phobia_st, self.hobby, self.baggage,
+                                self.fact1, self.fact2, self.action_card1, self.action_card2])
         else:
             return "wrong param"
 
