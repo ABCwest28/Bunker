@@ -12,7 +12,7 @@ class BunkerClientStartWindow(QMainWindow):
     Окно для ввода никнейма и ip-адреса для подключения к серверу
     """
 
-    class LineEditWithDoubleClick(QLineEdit):
+    class QLineEditWithDoubleClick(QLineEdit):
         doubleClicked = pyqtSignal()
 
         def event(self, event):
@@ -46,7 +46,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.label_1 = QLabel("Никнейм:", self)
         self.label_2 = QLabel("Ip-адрес сервера:", self)
         self.line_edit_nik = QLineEdit(self)
-        self.line_edit_ip = self.LineEditWithDoubleClick(self)
+        self.line_edit_ip = self.QLineEditWithDoubleClick(self)
 
         self.text_browser = QTextBrowser(self)
 
@@ -84,7 +84,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.btn_discon.clicked.connect(self.disconnect_button_event)
 
         self.btn_start.hide()
-        self.btn_start.clicked.connect(lambda: self.start_button_event(None))
+        self.btn_start.clicked.connect(self.start_button_event)
 
         self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
         self.line_edit_ip.textChanged.connect(self.enable_disable_btn_con)
@@ -95,9 +95,9 @@ class BunkerClientStartWindow(QMainWindow):
         self.init_layouts()
 
     def set_line_edit_ip_validation(self):
-        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"                                               # Часть регулярного выржение
-        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")   # Само регулярное выражение
-        ip_validator = QRegExpValidator(ip_regex, self)                                             # Валидатор для QLineEdit
+        ip_range = "(?:[0-1]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
+        ip_regex = QRegExp("^" + ip_range + "\\." + ip_range + "\\." + ip_range + "\\." + ip_range + "$")
+        ip_validator = QRegExpValidator(ip_regex, self) # Валидатор для QLineEdit
         self.line_edit_ip.setValidator(ip_validator)
         self.line_edit_ip.validator()
 
@@ -132,6 +132,8 @@ class BunkerClientStartWindow(QMainWindow):
         self.setFont(self.font0)
         self.main_window.setFont(self.font0)
         self.statusBar().setFont(self.font1)
+
+        self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
 
     def enable_disable_btn_con(self):
         if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
@@ -206,7 +208,18 @@ class BunkerClientStartWindow(QMainWindow):
                 self.statusBar().showMessage("Игра уже начата")
 
             elif type_command == "07:":
-                self.start_button_event(des_command)
+                self.start_game_event(name=des_command, params=None)
+
+            elif type_command == "08:":
+                self.start_game_event(name=None, params=des_command.split(sep="\t"))
+
+            elif type_command == "11:":
+                self.text_browser.append("Игра уже начата")
+
+            elif type_command == "12:":
+                separated = des_command.split(sep="/")
+                self.text_browser.append(f"Недостаточно игроков для старта: {separated[0]}/{separated[1]}")
+
             else:
                 self.text_browser.append("UNKNOWN_COMMAND: " + type_command + des_command)
 
@@ -230,11 +243,16 @@ class BunkerClientStartWindow(QMainWindow):
         self.line_edit_nik.setEnabled(True)
         self.line_edit_ip.setEnabled(True)
 
-    def start_button_event(self, name):
-        """Отправка сигнала на серевер по запуску игры"""
+    def start_button_event(self):
+        """Отправка сигнала на сервер по запуску игры"""
+        self.sock.write("10:".encode())
+        self.sock.write("\n".encode())
+
+    def start_game_event(self, name, params):
         self.main_window.show()
         if name is None:
             self.main_window.label_nik.setText(self.line_edit_nik.text())
+            self.main_window.fill_characteristic(params=params)
         else:
             self.main_window.label_nik.setText(str(name))
         self.hide()
@@ -249,6 +267,8 @@ class BunkerClientStartWindow(QMainWindow):
             self.grid_wrapper = QGridLayout()
 
             self.label_nik = QLabel()
+
+            self.label_turn = QLabel("Ход игрока: ")
 
             self.tab = QTabWidget()
             self.widget_player = QWidget()
@@ -276,8 +296,9 @@ class BunkerClientStartWindow(QMainWindow):
 
         def init_grid(self):
             self.grid_wrapper.addWidget(self.label_nik, 0, 0)
-            self.grid_wrapper.addWidget(self.tab, 1, 0)
-            self.grid_wrapper.addWidget(self.btn_leave, 2, 0)
+            self.grid_wrapper.addWidget(self.label_turn, 0, 1)
+            self.grid_wrapper.addWidget(self.tab, 1, 0, 1, 2)
+            self.grid_wrapper.addWidget(self.btn_leave, 2, 0, 1, 2)
 
             self.wrapper.setLayout(self.grid_wrapper)
 
@@ -307,6 +328,20 @@ class BunkerClientStartWindow(QMainWindow):
             self.line_baggage =     QLineEdit()
             self.line_fact1 =       QLineEdit()
             self.line_fact2 =       QLineEdit()
+
+            self.line_profession.setReadOnly(True)
+            self.line_bio_sex.setReadOnly(True)
+            self.line_bio_age.setReadOnly(True)
+            self.line_bio_pro.setReadOnly(True)
+            self.line_bio_hob.setReadOnly(True)
+            self.line_health.setReadOnly(True)
+            self.line_health_st.setReadOnly(True)
+            self.line_phobia.setReadOnly(True)
+            self.line_phobia_st.setReadOnly(True)
+            self.line_hobby.setReadOnly(True)
+            self.line_baggage.setReadOnly(True)
+            self.line_fact1.setReadOnly(True)
+            self.line_fact2.setReadOnly(True)
 
             self.btn_profession =   QPushButton(self.icon_reveal, "")
             self.btn_bio =          QPushButton(self.icon_reveal, "")
@@ -402,6 +437,23 @@ class BunkerClientStartWindow(QMainWindow):
             self.btn_action_card2.setToolTip("Активировать карту действия<br>Можно воспользоваться в любой момент")
 
             self.btn_leave.setToolTip("Покинуть текущую игру<br>Вернуться в сессию будет <b>невозможно</b>")
+
+        def fill_characteristic(self, params):
+            self.line_profession.setText(params[0])
+            self.line_bio_sex.setText(params[1])
+            self.line_bio_age.setText(params[2])
+            self.line_bio_pro.setText(params[3])
+            self.line_bio_hob.setText(params[4])
+            self.line_health.setText(params[5])
+            self.line_health_st.setText(params[6])
+            self.line_phobia.setText(params[7])
+            self.line_phobia_st.setText(params[8])
+            self.line_hobby.setText(params[9])
+            self.line_baggage.setText(params[10])
+            self.line_fact1.setText(params[11])
+            self.line_fact2.setText(params[12])
+            self.btn_action_card1.setText("Активировать карту №1: " + params[13])
+            self.btn_action_card2.setText("Активировать карту №2: " + params[14])
 
         def btn_leave_event(self):
             self.parent.disconnect_button_event()

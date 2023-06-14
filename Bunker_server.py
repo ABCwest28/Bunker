@@ -235,6 +235,7 @@ class Server(QMainWindow):
                     sock.close()
                 else:
                     if self.status:
+                        """игра запущена, проверяем был ли игрок после запуска"""
                         is_in_players = False
                         name = ""
                         for cur_player in self.players:
@@ -243,10 +244,13 @@ class Server(QMainWindow):
                                 cur_player.sock = sock
                                 cur_player.peer_address = sock.peerAddress().toString()
                                 name = cur_player.name
+                                cur_player.status = "В сети"
+                                cur_player.ui_btn_status.setText("В сети")
                         if is_in_players:
                             self.browser.append(f"Игрок {name} вернулся")
                             sock.write(f"07:{name}".encode())  # Вы были в игре, возвращайтесь
                             sock.write("\n".encode())
+
                         else:
                             sock.write("06:".encode())  # Игра была начата без вас
                             sock.write("\n".encode())

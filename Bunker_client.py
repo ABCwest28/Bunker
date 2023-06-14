@@ -12,7 +12,7 @@ class BunkerClientStartWindow(QMainWindow):
     Окно для ввода никнейма и ip-адреса для подключения к серверу
     """
 
-    class LineEditWithDoubleClick(QLineEdit):
+    class QLineEditWithDoubleClick(QLineEdit):
         doubleClicked = pyqtSignal()
 
         def event(self, event):
@@ -46,7 +46,7 @@ class BunkerClientStartWindow(QMainWindow):
         self.label_1 = QLabel("Никнейм:", self)
         self.label_2 = QLabel("Ip-адрес сервера:", self)
         self.line_edit_nik = QLineEdit(self)
-        self.line_edit_ip = self.LineEditWithDoubleClick(self)
+        self.line_edit_ip = self.QLineEditWithDoubleClick(self)
 
         self.text_browser = QTextBrowser(self)
 
@@ -132,6 +132,8 @@ class BunkerClientStartWindow(QMainWindow):
         self.setFont(self.font0)
         self.main_window.setFont(self.font0)
         self.statusBar().setFont(self.font1)
+
+        self.line_edit_nik.textChanged.connect(self.enable_disable_btn_con)
 
     def enable_disable_btn_con(self):
         if self.line_edit_nik.text() and self.line_edit_ip.hasAcceptableInput():
@@ -266,7 +268,7 @@ class BunkerClientStartWindow(QMainWindow):
 
             self.label_nik = QLabel()
 
-            self.label_turn = QLabel()
+            self.label_turn = QLabel("Ход игрока: ")
 
             self.tab = QTabWidget()
             self.widget_player = QWidget()
@@ -294,8 +296,9 @@ class BunkerClientStartWindow(QMainWindow):
 
         def init_grid(self):
             self.grid_wrapper.addWidget(self.label_nik, 0, 0)
-            self.grid_wrapper.addWidget(self.tab, 1, 0)
-            self.grid_wrapper.addWidget(self.btn_leave, 2, 0)
+            self.grid_wrapper.addWidget(self.label_turn, 0, 1)
+            self.grid_wrapper.addWidget(self.tab, 1, 0, 1, 2)
+            self.grid_wrapper.addWidget(self.btn_leave, 2, 0, 1, 2)
 
             self.wrapper.setLayout(self.grid_wrapper)
 
