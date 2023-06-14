@@ -233,6 +233,7 @@ class Server(QMainWindow):
                     sock.write("02:".encode())
                     sock.write("\n".encode())
                     sock.close()
+
                 else:
                     if self.status:
                         """игра запущена, проверяем был ли игрок после запуска"""
@@ -246,6 +247,7 @@ class Server(QMainWindow):
                                 name = cur_player.name
                                 cur_player.status = "В сети"
                                 cur_player.ui_btn_status.setText("В сети")
+
                         if is_in_players:
                             self.browser.append(f"Игрок {name} вернулся")
                             sock.write(f"07:{name}".encode())  # Вы были в игре, возвращайтесь
@@ -375,8 +377,17 @@ class Server(QMainWindow):
             self.status = True
             self.browser.append("Игра начата")
             self.btn_start_stop_session.setText("Завершить игру")
+
+            players_name = []
             for player in self.players:
-                params = player.get_info(param="start_game")
+                players_name.append(player.name)
+            players_name_str = "\t".join(players_name)
+
+            for player in self.players:
+                params = player.get_info(param="start_game") # Добавляем информацию для самого игрока о себе
+                params += "\t"
+                params += players_name_str # Добавляем имена всех игроков
+
                 player.sock.write(f"08:{params}".encode())  # Игра начата
                 player.sock.write("\n".encode())
 
@@ -469,6 +480,8 @@ class Player:
             return None
 
     def get_data(self, param):
+        """ TODO может вывести два одинаковых значения факт1 и факт2, нужно проверять и пропускать
+            TODO возможна ошибка remain"""
         result = "inited"
         if param == "bio":
             self.bio_age = sum(random.randint(0, 100) for _ in range(3)) // 3

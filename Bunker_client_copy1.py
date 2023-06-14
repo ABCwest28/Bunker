@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QHBoxLayout, QWidget,
-                             QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip)
-from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize
+                             QLineEdit, QTextBrowser, QGridLayout, QTabWidget, QToolTip, QSplitter, QScrollArea,
+                             QSizePolicy)
+from PyQt5.QtCore import QRegExp, QEvent, pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QRegExpValidator, QFont, QFontDatabase, QIcon
 from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket, QHostAddress, QNetworkProxy
 import font_resources_rc
@@ -250,18 +251,25 @@ class BunkerClientStartWindow(QMainWindow):
 
     def start_game_event(self, name, params):
         self.main_window.show()
+        self.hide()
+
         if name is None:
             self.main_window.label_nik.setText(self.line_edit_nik.text())
-            self.main_window.fill_characteristic(params=params)
+            self.main_window.fill_characteristic(params=params[:15])
+            for index, player_name in enumerate(params[15:]):
+                player = self.main_window.Player(parent=self.main_window, name=player_name, num=index)
+                self.main_window.players.append(player)
+            self.main_window.text_browser_history.append(self.text_browser.toPlainText())
         else:
             self.main_window.label_nik.setText(str(name))
-        self.hide()
+
 
     class BunkerClientMainWindow(QMainWindow):
         """Основное окно игры"""
         def __init__(self, parent):
             super().__init__()
             self.parent = parent
+            self.players = []
 
             self.wrapper = QWidget()
             self.grid_wrapper = QGridLayout()
@@ -314,6 +322,15 @@ class BunkerClientStartWindow(QMainWindow):
             self.label_baggage =    QLabel("Багаж")
             self.label_fact1 =      QLabel("Факт №1")
             self.label_fact2 =      QLabel("Факт №2")
+
+            self.label_profession.setAlignment(Qt.AlignRight)
+            self.label_bio.setAlignment(Qt.AlignRight)
+            self.label_health.setAlignment(Qt.AlignRight)
+            self.label_phobia.setAlignment(Qt.AlignRight)
+            self.label_hobby.setAlignment(Qt.AlignRight)
+            self.label_baggage.setAlignment(Qt.AlignRight)
+            self.label_fact1.setAlignment(Qt.AlignRight)
+            self.label_fact2.setAlignment(Qt.AlignRight)
 
             self.line_profession =  QLineEdit()
             self.line_bio_sex =     QLineEdit()
@@ -403,7 +420,124 @@ class BunkerClientStartWindow(QMainWindow):
             self.tab.addTab(self.widget_player, "О себе")
 
         def init_widget_about_all(self):
-            self.tab.addTab(self.widget_aboutAll, "Общее")
+            self.widget_about_all = QWidget()
+            self.box_about_all = QHBoxLayout()
+            self.widget_about_all.setLayout(self.box_about_all)
+
+            self.widget_players_list = QWidget()
+            self.widget_players_output = QWidget()
+
+            self.splitter = QSplitter(Qt.Horizontal)
+            self.box_about_all.addWidget(self.splitter)
+            self.splitter.addWidget(self.widget_players_list)
+            self.splitter.addWidget(self.widget_players_output)
+            self.splitter.setStretchFactor(0, 1)
+            self.splitter.setStretchFactor(1, 1)
+            self.splitter.setSizes([1, 2])
+
+            self.vbox_players_list = QVBoxLayout()
+            self.widget_players_list.setLayout(self.vbox_players_list)
+            self.vbox_players_list.setAlignment(Qt.AlignTop)
+
+            self.scroll_players_list = QScrollArea()
+            self.scroll_players_list.setWidgetResizable(True)
+            self.scroll_players_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.scroll_players_list.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            self.scroll_widget_content = QWidget()
+            self.vbox_players_list.addWidget(self.scroll_players_list)
+
+            self.layout_scroll_content = QVBoxLayout()
+            self.layout_scroll_content.setAlignment(Qt.AlignTop)
+            self.scroll_widget_content.setLayout(self.layout_scroll_content)
+
+            self.scroll_players_list.setWidget(self.scroll_widget_content)
+
+            self.grid_players_output = QGridLayout()
+            self.grid_players_output.setAlignment(Qt.AlignTop)
+            self.widget_players_output.setLayout(self.grid_players_output)
+
+            self.label_other_profession = QLabel("Профессия")
+            self.label_other_bio = QLabel("Био данные")
+            self.label_other_health = QLabel("Здоровье/стадия")
+            self.label_other_phobia = QLabel("Фобия/стадия")
+            self.label_other_hobby = QLabel("Хобби")
+            self.label_other_baggage = QLabel("Багаж")
+            self.label_other_fact1 = QLabel("Факт №1")
+            self.label_other_fact2 = QLabel("Факт №2")
+            self.label_other_action_card1 = QLabel("Карта действия №1")
+            self.label_other_action_card2 = QLabel("Карта действия №2")
+
+            self.label_other_profession.setAlignment(Qt.AlignRight)
+            self.label_other_bio.setAlignment(Qt.AlignRight)
+            self.label_other_health.setAlignment(Qt.AlignRight)
+            self.label_other_phobia.setAlignment(Qt.AlignRight)
+            self.label_other_hobby.setAlignment(Qt.AlignRight)
+            self.label_other_baggage.setAlignment(Qt.AlignRight)
+            self.label_other_fact1.setAlignment(Qt.AlignRight)
+            self.label_other_fact2.setAlignment(Qt.AlignRight)
+            self.label_other_action_card1.setAlignment(Qt.AlignRight)
+            self.label_other_action_card2.setAlignment(Qt.AlignRight)
+
+            self.line_other_profession = QLineEdit()
+            self.line_other_bio_sex = QLineEdit()
+            self.line_other_bio_age = QLineEdit()
+            self.line_other_bio_pro = QLineEdit()
+            self.line_other_bio_hob = QLineEdit()
+            self.line_other_health = QLineEdit()
+            self.line_other_health_st = QLineEdit()
+            self.line_other_phobia = QLineEdit()
+            self.line_other_phobia_st = QLineEdit()
+            self.line_other_hobby = QLineEdit()
+            self.line_other_baggage = QLineEdit()
+            self.line_other_fact1 = QLineEdit()
+            self.line_other_fact2 = QLineEdit()
+            self.line_other_action_card1 = QLineEdit()
+            self.line_other_action_card2 = QLineEdit()
+
+            self.line_other_profession.setReadOnly(True)
+            self.line_other_bio_sex.setReadOnly(True)
+            self.line_other_bio_age.setReadOnly(True)
+            self.line_other_bio_pro.setReadOnly(True)
+            self.line_other_bio_hob.setReadOnly(True)
+            self.line_other_health.setReadOnly(True)
+            self.line_other_health_st.setReadOnly(True)
+            self.line_other_phobia.setReadOnly(True)
+            self.line_other_phobia_st.setReadOnly(True)
+            self.line_other_hobby.setReadOnly(True)
+            self.line_other_baggage.setReadOnly(True)
+            self.line_other_fact1.setReadOnly(True)
+            self.line_other_fact2.setReadOnly(True)
+            self.line_other_action_card1.setReadOnly(True)
+            self.line_other_action_card2.setReadOnly(True)
+
+            self.grid_players_output.addWidget(self.label_other_profession, 0, 0)
+            self.grid_players_output.addWidget(self.label_other_bio, 1, 0)
+            self.grid_players_output.addWidget(self.label_other_health, 2, 0)
+            self.grid_players_output.addWidget(self.label_other_phobia, 3, 0)
+            self.grid_players_output.addWidget(self.label_other_hobby, 4, 0)
+            self.grid_players_output.addWidget(self.label_other_baggage, 5, 0)
+            self.grid_players_output.addWidget(self.label_other_fact1, 6, 0)
+            self.grid_players_output.addWidget(self.label_other_fact2, 7, 0)
+            self.grid_players_output.addWidget(self.label_other_action_card1, 8, 0)
+            self.grid_players_output.addWidget(self.label_other_action_card2, 9, 0)
+
+            self.grid_players_output.addWidget(self.line_other_profession, 0, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_bio_sex, 1, 1)
+            self.grid_players_output.addWidget(self.line_other_bio_age, 1, 2)
+            self.grid_players_output.addWidget(self.line_other_bio_pro, 1, 3)
+            self.grid_players_output.addWidget(self.line_other_bio_hob, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_health, 2, 1, 1, 3)
+            self.grid_players_output.addWidget(self.line_other_health_st, 2, 4)
+            self.grid_players_output.addWidget(self.line_other_phobia, 3, 1, 1, 3)
+            self.grid_players_output.addWidget(self.line_other_phobia_st, 3, 4)
+            self.grid_players_output.addWidget(self.line_other_hobby, 4, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_baggage, 5, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_fact1, 6, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_fact2, 7, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_action_card1, 8, 1, 1, 4)
+            self.grid_players_output.addWidget(self.line_other_action_card2, 9, 1, 1, 4)
+
+            self.tab.addTab(self.widget_about_all, "Общее")
 
         def init_widget_voting(self):
             self.tab.addTab(self.widget_voting, "Голосование")
@@ -459,6 +593,62 @@ class BunkerClientStartWindow(QMainWindow):
             self.parent.disconnect_button_event()
             self.parent.show()
             self.close()
+
+
+        class Player:
+            def __init__(self, parent, name, num):
+                self.parent = parent
+                self.name = name
+                self.num = num
+                self.status = "В сети"
+                """В сети, Изгнан, Не в сети"""
+
+                self.bio_sex = None
+                self.bio_age = None
+                self.bio_pro = None
+                self.bio_hob = None
+                self.profession = None
+                self.health_st = None
+                self.health = None
+                self.phobia_st = None
+                self.phobia = None
+                self.hobby = None
+                self.baggage = None
+                self.fact1 = None
+                self.fact2 = None
+                self.action_card1 = None
+                self.action_card2 = None
+
+                self.ui_btn_turn = QPushButton(str(num))
+                self.ui_btn_name = QPushButton(self.name)
+                self.ui_btn_status = QPushButton(self.status)
+                self.ui_btn_turn.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+                self.ui_btn_name.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+                self.ui_btn_status.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+                self.ui_hbox = QHBoxLayout()
+                self.ui_hbox.addWidget(self.ui_btn_turn)
+                self.ui_hbox.addWidget(self.ui_btn_name)
+                self.ui_hbox.addWidget(self.ui_btn_status)
+                self.parent.layout_scroll_content.addLayout(self.ui_hbox)
+                self.ui_btn_name.clicked.connect(self.ui_btn_name_clicked)
+
+            def ui_btn_name_clicked(self):
+                self.parent.line_other_profession.setText(str(self.profession))
+                self.parent.line_other_bio_sex.setText(str(self.bio_sex))
+                self.parent.line_other_bio_age.setText(str(self.bio_age))
+                self.parent.line_other_bio_pro.setText(str(self.bio_pro))
+                self.parent.line_other_bio_hob.setText(str(self.bio_hob))
+                self.parent.line_other_health.setText(str(self.health))
+                self.parent.line_other_health_st.setText(str(self.health_st))
+                self.parent.line_other_phobia.setText(str(self.phobia))
+                self.parent.line_other_phobia_st.setText(str(self.phobia_st))
+                self.parent.line_other_hobby.setText(str(self.hobby))
+                self.parent.line_other_baggage.setText(str(self.baggage))
+                self.parent.line_other_fact1.setText(str(self.fact1))
+                self.parent.line_other_fact2.setText(str(self.fact2))
+                self.parent.line_other_action_card1.setText(str(self.action_card1))
+                self.parent.line_other_action_card2.setText(str(self.action_card2))
+
 
 
 if __name__ == '__main__':
